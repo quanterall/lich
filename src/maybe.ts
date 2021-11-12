@@ -4,7 +4,7 @@
  */
 export type Maybe<T> = Just<T> | Nothing<T>;
 
-type MaybeUtilities<T> = {
+interface MaybeUtilities<T> {
   /**
    * Maps over a `Maybe` value. If the value is a `Just`, it will apply the given
    * function to the value. Otherwise, it will return the `Nothing`
@@ -63,9 +63,9 @@ type MaybeUtilities<T> = {
    * @param f Callback function
    */
   onNothing(f: () => void): Maybe<T>;
-  isJust: boolean;
-  isNothing: boolean;
-};
+  isJust(): this is Just<T>;
+  isNothing(): this is Nothing<T>;
+}
 
 export type Just<T> = {
   type: "Just";
@@ -88,8 +88,8 @@ export function Just<T>(t: T): Maybe<T> {
     },
     onNothing: (_f) => Just(t),
     otherwise: (_t) => Just(t),
-    isJust: true,
-    isNothing: false,
+    isJust: () => true,
+    isNothing: () => false,
   };
 }
 
@@ -112,7 +112,7 @@ export function Nothing<T>(): Maybe<T> {
       return Nothing();
     },
     otherwise: (t) => Just(t),
-    isJust: false,
-    isNothing: true,
+    isJust: () => false,
+    isNothing: () => true,
   };
 }
