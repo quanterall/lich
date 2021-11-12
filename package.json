@@ -4,7 +4,8 @@
   "repository": "git@github.com:quanterall/lich.git",
   "license": "BSD",
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc -p tsconfig.build.json",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
