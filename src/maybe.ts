@@ -21,11 +21,12 @@ interface MaybeUtilities<T> {
   bind<U>(f: (t: T) => Maybe<U>): Maybe<U>;
   /**
    * Takes the value of the `Maybe`, if it is `Just` it will apply the given function
-   * over it, if it is `Nothing` it will return the supplied default value.
-   * @param f Mapping function
+   * over it and return the result, if it is `Nothing` it will return the supplied
+   * default value.
+   * @param f Function
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    */
-  fold<U>(f: (t: T) => U, onNothing: U): Maybe<U>;
+  fold<U>(onNothing: U, f: (t: T) => U): U;
   /**
    * Maps over a `Maybe` value. If the value is a `Just`, it will apply the given
    * async function to the value. Otherwise, it will return the `Nothing`
@@ -46,13 +47,13 @@ interface MaybeUtilities<T> {
    * @param f Mapping async function
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    */
-  foldAsync<U>(f: (t: T) => Promise<Maybe<U>>, onNothing: U): Promise<Maybe<U>>;
+  foldAsync<U>(onNothing: U, f: (t: T) => Promise<U>): Promise<U>;
   /**
    * If the value of the `Maybe` is `Nothing` it will return a `Just`
    * with the supplied value, if it is `Just` it will return it
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    */
-  otherwise(onNothing: T): Maybe<T>;
+  otherwise(onNothing: T): T;
   /**
    * Executes a callback function if the value of the `Maybe` is `Just`
    * @param f Callback function
@@ -78,16 +79,16 @@ export function Just<T>(t: T): Maybe<T> {
     value: t,
     map: (f) => Just(f(t)),
     bind: (f) => f(t),
-    fold: (f) => Just(f(t)),
+    fold: (_t, f) => f(t),
     mapAsync: async (f) => Just(await f(t)),
     bindAsync: async (f) => await f(t),
-    foldAsync: async (f) => await f(t),
+    foldAsync: async (_t, f) => await f(t),
     onJust: (f) => {
       f(t);
       return Just(t);
     },
     onNothing: (_f) => Just(t),
-    otherwise: (_t) => Just(t),
+    otherwise: (_t) => t,
     isJust: () => true,
     isNothing: () => false,
   };
@@ -102,16 +103,16 @@ export function Nothing<T>(): Maybe<T> {
     type: "Nothing",
     map: (_f) => Nothing(),
     bind: (_f) => Nothing(),
-    fold: (_f, t) => Just(t),
+    fold: (t, _f) => t,
     mapAsync: async (_f) => Nothing(),
     bindAsync: async (_f) => Nothing(),
-    foldAsync: async (_f, t) => Just(t),
+    foldAsync: async (t, _f) => t,
     onJust: (_f) => Nothing(),
     onNothing: (f) => {
       f();
       return Nothing();
     },
-    otherwise: (t) => Just(t),
+    otherwise: (t) => t,
     isJust: () => false,
     isNothing: () => true,
   };
