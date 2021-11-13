@@ -1,22 +1,22 @@
 import { Just, Maybe, Nothing } from "../src/maybe";
 
 test("'isJust'", () => {
-  const just = Just(1).map((_x) => 2);
+  const just = Just("hello").map((j) => j.length);
 
   expect(just.isJust()).toBe(true);
   expect(just.isNothing()).toBe(false);
 });
 
 test("'isNothing'", () => {
-  const nothing = Nothing().map((_x) => 2);
+  const nothing = Nothing<string>().map((j) => j.length);
 
   expect(nothing.isNothing()).toBe(true);
   expect(nothing.isJust()).toBe(false);
 });
 
 test("'map'", () => {
-  const just = Just("hello").map((x) => x.length);
-  const nothing = Nothing<string>().map((x) => x.length);
+  const just = Just("hello").map((j) => j.length);
+  const nothing = Nothing<string>().map((j) => j.length);
 
   expect(just.isJust()).toBe(true);
   if (just.isJust()) expect(just.value).toBe(5);
@@ -25,11 +25,11 @@ test("'map'", () => {
 });
 
 test("'bind'", () => {
-  const just1 = Just(1).bind((x) => Just(x + 10));
-  const just2 = Just(1).bind((_x) => Nothing());
-  const just3 = Just("hey").bind((x) => Just(x.length + 10));
-  const nothing1 = Nothing().bind((x) => Just(x));
-  const nothing2 = Nothing().bind((_x) => Nothing());
+  const just1 = Just(1).bind((j) => Just(j + 10));
+  const just2 = Just(1).bind((_j) => Nothing());
+  const just3 = Just("hey").bind((j) => Just(j.length + 10));
+  const nothing1 = Nothing().bind((j) => Just(j));
+  const nothing2 = Nothing().bind((_j) => Nothing());
 
   expect(just1.isJust()).toBe(true);
   if (just1.isJust()) expect(just1.value).toBe(11);
@@ -43,11 +43,11 @@ test("'bind'", () => {
 });
 
 test("'fold'", () => {
-  const just1 = Just("hello").fold(25, (x) => x.length);
-  const just2 = Just("hello").fold("hello world!", (x) => x + " world");
+  const just1 = Just("hello").fold(25, (j) => j.length);
+  const just2 = Just("hello").fold("hello world!", (j) => j + " world");
 
-  const nothing1 = Nothing().fold(25, (x) => x);
-  const nothing2 = Nothing().fold("hello world!", (x) => x + " world");
+  const nothing1 = Nothing().fold(25, (j) => j);
+  const nothing2 = Nothing().fold("hello world!", (j) => j + " world");
 
   expect(just1).toBe(5);
   expect(just2).toBe("hello world");
@@ -57,7 +57,7 @@ test("'fold'", () => {
 
 test("'otherwise'", () => {
   const just = Just("hello")
-    .map((x) => x + " world!")
+    .map((j) => j + " world!")
     .otherwise("hello world");
 
   const nothing = Nothing().otherwise("hello world!");
@@ -66,35 +66,32 @@ test("'otherwise'", () => {
   expect(nothing).toBe("hello world!");
 });
 
-test("'onJust'", () => {
-  let a: number = 0;
+test("'onJust/onNothing' with `Just`", () => {
+  let val = 0;
   const just = Just(1)
-    .onJust((x) => (a = x))
-    .onNothing(() => (a = 3));
+    .onJust((j) => (val = j))
+    .onNothing(() => (val = 3));
 
-  expect(a).toBe(1);
+  expect(val).toBe(1);
   expect(just.isJust()).toBe(true);
   if (just.isJust()) expect(just.value).toBe(1);
 });
 
-test("'onNothing'", () => {
-  let a = 0;
+test("'onJust/onNothing' with `Nothing`", () => {
+  let val = 0;
   const nothing = Nothing()
-    .onJust((_x) => (a = 10))
-    .onNothing(() => (a = 3));
+    .onJust((_x) => (val = 10))
+    .onNothing(() => (val = 3));
 
-  expect(a).toBe(3);
+  expect(val).toBe(3);
   expect(nothing.isNothing()).toBe(true);
 });
 
 test("'mapAsync'", async () => {
-  const just = await Just(1).mapAsync((v) => {
-    return new Promise((resolve) => resolve(v + 10));
-  });
+  const asyncFunc = (v: number) => new Promise((resolve) => resolve(v + 10));
 
-  const nothing = await Nothing().mapAsync((_v) => {
-    return new Promise((resolve) => resolve(1));
-  });
+  const just = await Just(1).mapAsync(asyncFunc);
+  const nothing = await Nothing<number>().mapAsync(asyncFunc);
 
   expect(just.isJust()).toBe(true);
   if (just.isJust()) expect(just.value).toBe(11);
@@ -103,17 +100,16 @@ test("'mapAsync'", async () => {
 });
 
 test("'bindAsync'", async () => {
-  const just1 = await Just("hello world").bindAsync((v) => {
-    return new Promise<Maybe<number>>((resolve) => resolve(Just(v.length + 1)));
-  });
+  const asyncFunc = (v: string) =>
+    new Promise<Maybe<number>>((resolve) => resolve(Just(v.length + 1)));
+
+  const just1 = await Just("hello world").bindAsync(asyncFunc);
 
   const just2 = await Just("hello world").bindAsync((_v) => {
     return new Promise<Maybe<number>>((resolve) => resolve(Nothing()));
   });
 
-  const nothing = await Nothing().bindAsync((_v) => {
-    return new Promise<Maybe<number>>((resolve) => resolve(Just(10)));
-  });
+  const nothing = await Nothing<string>().bindAsync(asyncFunc);
 
   expect(just1.isJust()).toBe(true);
   if (just1.isJust()) expect(just1.value).toBe(12);
@@ -123,13 +119,10 @@ test("'bindAsync'", async () => {
 });
 
 test("'foldAsync'", async () => {
-  const just = await Just("hello world").foldAsync(100, (v) => {
-    return new Promise((resolve) => resolve(v.length + 1));
-  });
+  const asyncFunc = (v: string) => new Promise((resolve) => resolve(v.length + 1));
 
-  const nothing = await Nothing().foldAsync("default", (v) => {
-    return new Promise((resolve) => resolve(v + "hey"));
-  });
+  const just = await Just("hello world").foldAsync(100, asyncFunc);
+  const nothing = await Nothing<string>().foldAsync("default", asyncFunc);
 
   expect(just).toBe(12);
   expect(nothing).toBe("default");
