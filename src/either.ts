@@ -1,4 +1,13 @@
 import { Just, Maybe, Nothing } from "./maybe";
+
+/**
+ * The `Either` type represents values with two possibilities:
+ * a value of type `Either<L, R>` is either `Left` with error type `<L>`
+ * or `Right` with value type `<R>`.
+ * The `Either` type is sometimes used to represent a value which is either correct or an error;
+ * by convention, the `Left` constructor is used to hold an error value and
+ * the `Right` constructor is used to hold a correct value (mnemonic: "right" also means "correct").
+ */
 export type Either<L, R> = Left<L, R> | Right<L, R>;
 
 interface EitherUtilities<L, R> {
