@@ -1,20 +1,27 @@
 import { Just, Maybe, Nothing } from "../src/maybe";
 
-test("'map'", () => {
+test("'isJust'", () => {
   const just = Just(1).map((_x) => 2);
-  const nothing = Nothing().map((_x) => 2);
 
   expect(just.isJust()).toBe(true);
   expect(just.isNothing()).toBe(false);
+});
+
+test("'isNothing'", () => {
+  const nothing = Nothing().map((_x) => 2);
+
   expect(nothing.isNothing()).toBe(true);
   expect(nothing.isJust()).toBe(false);
 });
 
-test("'map' 2", () => {
+test("'map'", () => {
   const just = Just("hello").map((x) => x.length);
+  const nothing = Nothing<string>().map((x) => x.length);
 
   expect(just.isJust()).toBe(true);
   if (just.isJust()) expect(just.value).toBe(5);
+
+  expect(nothing.isNothing()).toBe(true);
 });
 
 test("'bind'", () => {
