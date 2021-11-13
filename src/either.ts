@@ -23,7 +23,7 @@ interface EitherUtilities<L, R> {
    * `Left` that is already there.
    * @param f Transformer function
    */
-  bind<E, T>(f: (r: R) => Either<E, T>): Either<E, T>;
+  bind<T>(f: (r: R) => Either<L, T>): Either<L, T>;
   /**
    * Takes the value of the `Either`, if it is `Right` it will apply the given function
    * over it and return the result, if it is `Left` it will return the supplied
@@ -45,7 +45,7 @@ interface EitherUtilities<L, R> {
    * Otherwise it will return the `Left` that is already there.
    * @param f Transformer async function
    */
-  bindAsync<E, T>(f: (r: R) => Promise<Either<E, T>>): Promise<Either<E, T>>;
+  bindAsync<T>(f: (r: R) => Promise<Either<L, T>>): Promise<Either<L, T>>;
   /**
    * Takes the value of the `Either`, if it is `Right` it will apply the given async
    * function over it, if it is `Left` it will return the supplied default value.
@@ -101,21 +101,23 @@ export function Right<L, R>(r: R): Either<L, R> {
 
 export type Left<L, R> = {
   type: "Left";
+  reason: L;
 } & EitherUtilities<L, R>;
 
-export function Left<L, R>(): Either<L, R> {
+export function Left<L, R>(left: L): Either<L, R> {
   return {
     type: "Left",
-    map: (_f) => Left(),
-    bind: (_f) => Left(),
+    reason: left,
+    map: (_f) => Left(left),
+    bind: (_f) => Left(left),
     fold: (d, _f) => d,
-    mapAsync: async (_f) => Left(),
-    bindAsync: async (_f) => Left(),
+    mapAsync: async (_f) => Left(left),
+    bindAsync: async (_f) => Left(left),
     foldAsync: async (d, _f) => d,
-    onRight: () => Left(),
+    onRight: () => Left(left),
     onLeft: (f) => {
       f();
-      return Left();
+      return Left(left);
     },
     toMaybe: () => Nothing(),
     isRight: () => false,
