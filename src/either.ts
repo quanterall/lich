@@ -62,7 +62,9 @@ interface EitherUtilities<L, R> {
    * Executes a callback function if the value of the `Either` is `Left`
    * @param f Callback function
    */
-  onLeft(f: () => void): Either<L, R>;
+  onLeft(f: (l: L) => void): Either<L, R>;
+  fromRight(d: R): R;
+  fromLeft(d: L): L;
   /**
    * Transforms `Either` type to `Maybe`. If it's a `Right` it will return
    * a `Just` with the same value inside. If it's a `Left` it will return
@@ -93,6 +95,8 @@ export function Right<L, R>(r: R): Either<L, R> {
       return Right(r);
     },
     onLeft: () => Right(r),
+    fromRight: (_d) => r,
+    fromLeft: (d) => d,
     toMaybe: () => Just(r),
     isRight: () => true,
     isLeft: () => false,
@@ -104,23 +108,44 @@ export type Left<L, R> = {
   reason: L;
 } & EitherUtilities<L, R>;
 
-export function Left<L, R>(left: L): Either<L, R> {
+export function Left<L, R>(l: L): Either<L, R> {
   return {
     type: "Left",
-    reason: left,
-    map: (_f) => Left(left),
-    bind: (_f) => Left(left),
+    reason: l,
+    map: (_f) => Left(l),
+    bind: (_f) => Left(l),
     fold: (d, _f) => d,
-    mapAsync: async (_f) => Left(left),
-    bindAsync: async (_f) => Left(left),
+    mapAsync: async (_f) => Left(l),
+    bindAsync: async (_f) => Left(l),
     foldAsync: async (d, _f) => d,
-    onRight: () => Left(left),
+    onRight: () => Left(l),
     onLeft: (f) => {
-      f();
-      return Left(left);
+      f(l);
+      return Left(l);
     },
+    fromRight: (d) => d,
+    fromLeft: (_d) => l,
     toMaybe: () => Nothing(),
     isRight: () => false,
     isLeft: () => true,
   };
+}
+
+export function rights<L, R>(es: Either<L, R>[]): R[] {
+  return es.reduce((acc, e) => e.fold(acc, (r) => [...acc, r]), [] as R[]);
+}
+
+export function rightsOrLeft<L, R>(es: Either<L, R>[], onAllLefts: L): Either<L, R[]> {
+  const allRights = rights(es);
+  if (allRights.length === 0) return Left(onAllLefts);
+
+  return Right(allRights);
+}
+
+export function lefts<L, R>(es: Either<L, R>[]): L[] {
+  return es.reduce((acc, e) => {
+    if (e.isLeft()) return [...acc, e.reason];
+
+    return acc;
+  }, [] as L[]);
 }

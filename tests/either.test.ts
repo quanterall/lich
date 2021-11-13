@@ -93,8 +93,8 @@ test("'foldAsync'", async () => {
 test("'onRight/onLeft' with `Right`", () => {
   let val = 0;
   const right = Right<string, string>("hello")
-    .onRight(() => (val = 10))
-    .onLeft(() => (val = 20));
+    .onRight((_r) => (val = 10))
+    .onLeft((_l) => (val = 20));
 
   expect(right.isRight()).toBe(true);
   if (right.isRight()) expect(right.value).toBe("hello");
@@ -105,8 +105,8 @@ test("'onRight/onLeft' with `Right`", () => {
 test("'onRight/onLeft' with `Left`", () => {
   let val = 0;
   const left = Left<string, string>("error")
-    .onRight(() => (val = 10))
-    .onLeft(() => (val = 20));
+    .onRight((_r) => (val = 10))
+    .onLeft((_l) => (val = 20));
 
   expect(left.isLeft()).toBe(true);
   expect(val).toBe(20);
