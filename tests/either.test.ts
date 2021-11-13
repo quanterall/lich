@@ -1,4 +1,4 @@
-import { Right, Left, Either } from "../src/either";
+import { Right, Left, Either, rights, rightsOrLeft, lefts } from "../src/either";
 import { Just, Nothing } from "../src/maybe";
 
 test("'isRight'", () => {
@@ -124,4 +124,40 @@ test("'toMaybe'", () => {
   if (rightMaybe.isJust()) expect(rightMaybe.value).toBe(5);
 
   expect(leftMaybe.isNothing()).toBe(true);
+});
+
+test("'rights'", () => {
+  const eithers: Either<string, number>[] = [
+    Right(1),
+    Right(2),
+    Left("NaN"),
+    Right(4),
+    Right(5),
+    Left("NaN"),
+    Left("NaN"),
+  ];
+
+  expect(rights(eithers)).toEqual([1, 2, 4, 5]);
+});
+
+test("'rightsOrLeft'", () => {
+  const eithers: Either<string, number>[] = [Left("NaN"), Left("NaN"), Left("NaN")];
+
+  const res = rightsOrLeft(eithers, "All are lefts");
+  expect(res.isLeft()).toBe(true);
+  if (res.isLeft()) expect(res.reason).toBe("All are lefts");
+});
+
+test("'rights'", () => {
+  const eithers: Either<string, number>[] = [
+    Right(1),
+    Right(2),
+    Left("NaN"),
+    Right(4),
+    Right(5),
+    Left("NaN"),
+    Left("NaN"),
+  ];
+
+  expect(lefts(eithers)).toEqual(["NaN", "NaN", "NaN"]);
 });
