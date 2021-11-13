@@ -1,3 +1,5 @@
+import { Either, Left, Right } from "./either";
+
 /**
  * The `Maybe` type encapsulates an optional value. A value of type `Maybe<J>`
  * either contains a value of type <J> (represented as `Just<J>`),
@@ -87,6 +89,7 @@ interface MaybeUtilities<J> {
   onNothing(f: () => void): Maybe<J>;
   isJust(): this is Just<J>;
   isNothing(): this is Nothing<J>;
+  toEither<L>(l: L): Either<L, J>;
 }
 
 export type Just<J> = {
@@ -112,6 +115,7 @@ export function Just<J>(j: J): Maybe<J> {
     otherwise: (_t) => j,
     isJust: () => true,
     isNothing: () => false,
+    toEither: (_l) => Right(j),
   };
 }
 
@@ -136,5 +140,6 @@ export function Nothing<J>(): Maybe<J> {
     otherwise: (j) => j,
     isJust: () => false,
     isNothing: () => true,
+    toEither: (l) => Left(l),
   };
 }
