@@ -126,6 +126,18 @@ test("'toMaybe'", () => {
   expect(leftMaybe.isNothing()).toBe(true);
 });
 
+test("'fromRight'", () => {
+  const right = Right("hello world").fromRight("empty");
+
+  expect(right).toBe("hello world");
+});
+
+test("'fromRight'", () => {
+  const left = Left("some error here").fromLeft("there is no error");
+
+  expect(left).toBe("some error here");
+});
+
 test("'rights'", () => {
   const eithers: Either<string, number>[] = [
     Right(1),
@@ -148,7 +160,7 @@ test("'rightsOrLeft'", () => {
   if (res.isLeft()) expect(res.reason).toBe("All are lefts");
 });
 
-test("'rights'", () => {
+test("'lefts'", () => {
   const eithers: Either<string, number>[] = [
     Right(1),
     Right(2),

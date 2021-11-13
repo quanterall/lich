@@ -63,7 +63,15 @@ interface EitherUtilities<L, R> {
    * @param f Callback function
    */
   onLeft(f: (l: L) => void): Either<L, R>;
+  /**
+   * Return the contents of a `Right` value or a default value otherwise.
+   * @param d default value if `Either` is `Left`
+   */
   fromRight(d: R): R;
+  /**
+   * Return the contents of a `Left` value or a default value otherwise.
+   * @param d default value if `Either` is `Right`
+   */
   fromLeft(d: L): L;
   /**
    * Transforms `Either` type to `Maybe`. If it's a `Right` it will return

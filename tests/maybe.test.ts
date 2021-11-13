@@ -128,6 +128,17 @@ test("'foldAsync'", async () => {
   expect(nothing).toBe("default");
 });
 
+test("'toEither'", () => {
+  const eitherJust = Just("hello world").toEither("something went wrong..");
+  const eitherNothing = Nothing<string>().toEither("something went wrong..");
+
+  expect(eitherJust.isRight()).toBe(true);
+  if (eitherJust.isRight()) expect(eitherJust.value).toBe("hello world");
+
+  expect(eitherNothing.isLeft()).toBe(true);
+  if (eitherNothing.isLeft()) expect(eitherNothing.reason).toBe("something went wrong..");
+});
+
 test("'justs'", () => {
   const maybes = [Just(1), Just(2), Just(3), Nothing(), Just(5), Nothing()];
 
