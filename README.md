@@ -57,7 +57,7 @@ const just = Just(" Hello World  ")
 
 function nonEmptyString(s: string): Maybe<string> {
   const trimmedS = s.trim();
-  if (trimmedS === "") return Nothing();
+  if (trimmedS.length === 0) return Nothing();
 
   return Just(trimmedS);
 }
