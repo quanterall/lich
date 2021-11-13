@@ -143,3 +143,7 @@ export function Nothing<J>(): Maybe<J> {
     toEither: (l) => Left(l),
   };
 }
+
+export function justs<J>(ms: Maybe<J>[]): J[] {
+  return ms.reduce((acc, m) => m.fold(acc, (j) => [...acc, j]), [] as J[]);
+}

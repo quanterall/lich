@@ -1,4 +1,4 @@
-import { Just, Maybe, Nothing } from "../src/maybe";
+import { Just, justs, Maybe, Nothing } from "../src/maybe";
 
 test("'isJust'", () => {
   const just = Just("hello").map((j) => j.length);
@@ -126,4 +126,10 @@ test("'foldAsync'", async () => {
 
   expect(just).toBe(12);
   expect(nothing).toBe("default");
+});
+
+test("'justs'", () => {
+  const maybes = [Just(1), Just(2), Just(3), Nothing(), Just(5), Nothing()];
+
+  expect(justs(maybes)).toEqual([1, 2, 3, 5]);
 });
