@@ -132,7 +132,7 @@ test("'fromRight'", () => {
   expect(right).toBe("hello world");
 });
 
-test("'fromRight'", () => {
+test("'fromLeft'", () => {
   const left = Left("some error here").fromLeft("there is no error");
 
   expect(left).toBe("some error here");
