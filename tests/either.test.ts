@@ -1,4 +1,13 @@
-import { Right, Left, Either, rights, rightsOrLeft, lefts } from "../src/either";
+import {
+  Right,
+  Left,
+  Either,
+  rights,
+  rightsOrAllLeft,
+  lefts,
+  rightsOrLeft,
+  firstRight,
+} from "../src/either";
 import { Just, Nothing } from "../src/maybe";
 
 test("'isRight'", () => {
@@ -152,12 +161,43 @@ test("'rights'", () => {
   expect(rights(eithers)).toEqual([1, 2, 4, 5]);
 });
 
-test("'rightsOrLeft'", () => {
+test("'rightsOrAllLeft'", () => {
   const eithers: Either<string, number>[] = [Left("NaN"), Left("NaN"), Left("NaN")];
 
-  const res = rightsOrLeft(eithers, "All are lefts");
+  const res = rightsOrAllLeft(eithers, "All are lefts");
   expect(res.isLeft()).toBe(true);
   if (res.isLeft()) expect(res.reason).toBe("All are lefts");
+});
+
+test("'rightsOrLeft'", () => {
+  const rights: Either<string, number>[] = [Right(1), Right(2), Right(3)];
+  const eithers: Either<string, number>[] = [Right(1), Right(2), Left("NaN")];
+
+  const res = rightsOrLeft(rights);
+  expect(res.isRight()).toBe(true);
+  if (res.isRight()) expect(res.value).toEqual([1, 2, 3]);
+
+  const res2 = rightsOrLeft(eithers);
+  expect(res2.isRight()).toBe(false);
+  if (res2.isLeft()) expect(res2.reason).toBe("NaN");
+});
+
+test("'firstRight'", () => {
+  const hasRight1: Either<string, number>[] = [Left("NaN"), Left("NaN"), Right(3)];
+  const hasRight2: Either<string, number>[] = [Right(1), Left("NaN"), Right(3)];
+  const hasntRight: Either<string, number>[] = [Left("NaN"), Left("NaN"), Left("NaN")];
+
+  const res = firstRight(hasRight1, "all are lefts");
+  expect(res.isRight()).toBe(true);
+  if (res.isRight()) expect(res.value).toBe(3);
+
+  const res1 = firstRight(hasRight2, "all are lefts");
+  expect(res1.isRight()).toBe(true);
+  if (res1.isRight()) expect(res1.value).toBe(1);
+
+  const res2 = firstRight(hasntRight, "all are lefts");
+  expect(res2.isRight()).toBe(false);
+  if (res2.isLeft()) expect(res2.reason).toBe("all are lefts");
 });
 
 test("'lefts'", () => {

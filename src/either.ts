@@ -143,11 +143,27 @@ export function rights<L, R>(es: Either<L, R>[]): R[] {
   return es.reduce((acc, e) => e.fold(acc, (r) => [...acc, r]), [] as R[]);
 }
 
-export function rightsOrLeft<L, R>(es: Either<L, R>[], onAllLefts: L): Either<L, R[]> {
+export function rightsOrAllLeft<L, R>(es: Either<L, R>[], onAllLefts: L): Either<L, R[]> {
   const allRights = rights(es);
   if (allRights.length === 0) return Left(onAllLefts);
 
   return Right(allRights);
+}
+
+export function rightsOrLeft<L, R>(es: Either<L, R>[]): Either<L, R[]> {
+  const rs: R[] = [];
+  for (const e of es) {
+    if (e.isLeft()) return Left(e.reason);
+    rs.push(e.value);
+  }
+  return Right(rs);
+}
+
+export function firstRight<L, R>(es: Either<L, R>[], onAllLeft: L): Either<L, R> {
+  for (const e of es) {
+    if (e.isRight()) return e;
+  }
+  return Left(onAllLeft);
 }
 
 export function lefts<L, R>(es: Either<L, R>[]): L[] {
