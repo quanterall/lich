@@ -7,6 +7,7 @@ import {
   lefts,
   rightsOrLeft,
   firstRight,
+  nullableToEither,
 } from "../src/either";
 import { Just, Nothing } from "../src/maybe";
 
@@ -212,4 +213,18 @@ test("'lefts'", () => {
   ];
 
   expect(lefts(eithers)).toEqual(["NaN", "NaN", "NaN"]);
+});
+
+test("'nullableToEither'", () => {
+  let p: number | undefined = undefined;
+  const left = nullableToEither(p, "Not defined");
+
+  p = 10;
+  const right = nullableToEither(p, "Not defined");
+
+  expect(left.isLeft()).toBe(true);
+  left.onLeft((l) => expect(l).toBe("Not defined"));
+
+  expect(right.isRight()).toBe(true);
+  right.onRight((r) => expect(r).toBe(10));
 });

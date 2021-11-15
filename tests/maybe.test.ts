@@ -1,4 +1,4 @@
-import { Just, justs, Maybe, Nothing } from "../src/maybe";
+import { Just, justs, justsOrNothing, Maybe, Nothing, nullableToMaybe } from "../src/maybe";
 
 test("'isJust'", () => {
   const just = Just("hello").map((j) => j.length);
@@ -140,7 +140,40 @@ test("'toEither'", () => {
 });
 
 test("'justs'", () => {
-  const maybes = [Just(1), Just(2), Just(3), Nothing(), Just(5), Nothing()];
+  const maybes1 = [Nothing(), Nothing()];
+  const maybes2 = [Just(1), Just(2)];
+  const maybes3 = [Just(1), Just(2), Just(3), Nothing(), Just(5), Nothing()];
 
-  expect(justs(maybes)).toEqual([1, 2, 3, 5]);
+  expect(justs(maybes1)).toEqual([]);
+  expect(justs(maybes2)).toEqual([1, 2]);
+  expect(justs(maybes3)).toEqual([1, 2, 3, 5]);
+});
+
+test("'justsOrNothing'", () => {
+  const maybes1 = [Nothing(), Nothing()];
+  const maybes2 = [Just(1), Just(2)];
+  const maybes3 = [Just(1), Just(2), Just(3), Nothing(), Just(5), Nothing()];
+
+  const res1 = justsOrNothing(maybes1);
+  const res2 = justsOrNothing(maybes2);
+  const res3 = justsOrNothing(maybes3);
+
+  expect(res1.isNothing()).toBe(true);
+
+  expect(res2.isJust()).toBe(true);
+  res2.onJust((js) => expect(js).toEqual([1, 2]));
+
+  expect(res3.isNothing()).toBe(true);
+});
+
+test("'nullableToMaybe'", () => {
+  let p: number | undefined = undefined;
+
+  expect(nullableToMaybe(p).isNothing()).toBe(true);
+
+  p = 10;
+  const maybe = nullableToMaybe(p);
+
+  expect(maybe.isJust()).toBe(true);
+  maybe.onJust((j) => expect(j).toBe(10));
 });
