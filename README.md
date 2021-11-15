@@ -373,6 +373,22 @@ function rightOrThrow(either: Either<string, string>): string {
 }
 ```
 
-### isNothing
+### isLeft
 
-`isNothing` is just the opposite of `isJust`
+`isLeft` is just the opposite of `isRight`
+
+```ts
+const left = Left("some error..");
+// left.reason <-- if you try to access 'reason' here typescript will complain
+
+if (left.isLeft()) {
+  const myError = left.reason; // here it's fine
+}
+
+const right = Right("this is awesome");
+// right.value <-- if you try to access 'value' here typescript will complain
+
+if (!right.isLeft()) {
+  const nice = right.value; // here it's fine
+}
+```
