@@ -147,7 +147,18 @@ interface MaybeUtilities<J> {
    * }
    */
   isNothing(): this is Nothing<J>;
-  toEither<L>(l: L): Either<L, J>;
+  /**
+   * Takes a `Maybe` and with given default `Left` value, it will either
+   * return `Right` if the `Maybe` was `Just`
+   * or it will return `Left` with the provided default value
+   * if the `Maybe` was `Nothing`
+   * @param onNothing Default error value
+   * @example
+   * const either = Just(10).toEither("error") // Right(10)
+   *
+   * const either2 = Nothing().toEither("error") // Left("error")
+   */
+  toEither<L>(onNothing: L): Either<L, J>;
 }
 
 export type Just<J> = {
@@ -226,15 +237,15 @@ export function justs<J>(ms: Maybe<J>[]): J[] {
  * @returns `Maybe` with a list of all `Just` values
  * @example
  * const maybes = [Just(1), Just(2)]
- * justsOrNothing(maybes) // Just([1, 2])
+ * sequenceMaybe(maybes) // Just([1, 2])
  *
  * const maybes1 = [Just(1), Nothing(), Just(3)]
- * justsOrNothing(maybes1) // Nothing()
+ * sequenceMaybe(maybes1) // Nothing()
  *
  * const maybes2 = [Nothing(), Nothing()]
- * justsOrNothing(maybes2) // Nothing()
+ * sequenceMaybe(maybes2) // Nothing()
  */
-export function justsOrNothing<J>(ms: Maybe<J>[]): Maybe<J[]> {
+export function sequenceMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
   const js: J[] = [];
   for (const m of ms) {
     if (m.isNothing()) return Nothing();
@@ -249,6 +260,12 @@ export function justsOrNothing<J>(ms: Maybe<J>[]): Maybe<J[]> {
  * otherwise it returns `Nothing`
  * @param j A nullable value, i.e. _value that can hold `null` or `undefined` or both_
  * @returns `Maybe` of the given value
+ * @example
+ * const p: number | undefined = undefined
+ * nullableToMaybe(p) // Nothing()
+ *
+ * p = 10
+ * nullableToMaybe(p) // Just(10)
  */
 export function nullableToMaybe<J>(j: J): Maybe<J> {
   if (j === null || j === undefined) return Nothing();

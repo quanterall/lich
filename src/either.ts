@@ -259,8 +259,14 @@ export function rights<L, R>(es: Either<L, R>[]): R[] {
  * @param es A list of `Either`s
  * @param onAllLefts Default error value if there is not a single `Right`
  * @returns `Either` with either all `Right`s or a default `Left`
+ * @example
+ * const eithers = [Left("NaN"), Right(2), Right(3), Left("NaN")]
+ * rightsOr(eithers, "all empty") // Right([2, 3])
+ *
+ * const eithers2 = [Left("NaN"), Left("NaN")]
+ * rightsOr(eithers2, "all empty") // Left("all empty")
  */
-export function rightsOrAllLeft<L, R>(es: Either<L, R>[], onAllLefts: L): Either<L, R[]> {
+export function rightsOr<L, R>(es: Either<L, R>[], onAllLefts: L): Either<L, R[]> {
   const allRights = rights(es);
   if (allRights.length === 0) return Left(onAllLefts);
 
@@ -273,8 +279,14 @@ export function rightsOrAllLeft<L, R>(es: Either<L, R>[], onAllLefts: L): Either
  * or the first `Left` that it encounters.
  * @param es A list of `Either`s
  * @returns `Either` with either all `Right`s or the first `Left`
+ * @example
+ * const rights = [Right(1), Right(2), Right(3)];
+ * sequenceEither(rights) // Right([1, 2, 3])
+ *
+ * const eithers = [Right(1), Left("NaN"), Right(3)];
+ * sequenceEither(eithers) // Left("NaN")
  */
-export function rightsOrLeft<L, R>(es: Either<L, R>[]): Either<L, R[]> {
+export function sequenceEither<L, R>(es: Either<L, R>[]): Either<L, R[]> {
   const rs: R[] = [];
   for (const e of es) {
     if (e.isLeft()) return Left(e.reason);
@@ -290,6 +302,12 @@ export function rightsOrLeft<L, R>(es: Either<L, R>[]): Either<L, R[]> {
  * @param es A list of `Either`s
  * @param onAllLeft Default error value if all are `Left`s
  * @returns Either the first `Right` or a `Left` with the provided default error value
+ * @example
+ * const eithers = [Left("NaN"), Left("NaN"), Right(1), Right(2)]
+ * firstRight(eithers, "all are left") // Right(1)
+ *
+ * const eithers2 = [Left("NaN"), Left("NaN")]
+ * firstRight(eithers2, "all are left") // Left("all are left")
  */
 export function firstRight<L, R>(es: Either<L, R>[], onAllLeft: L): Either<L, R> {
   for (const e of es) {
@@ -302,12 +320,18 @@ export function firstRight<L, R>(es: Either<L, R>[], onAllLeft: L): Either<L, R>
  * Fetches all `Left`s from a list of `Either`s.
  * @param es A list of `Either`s
  * @returns All `Left`s
+ * @example
+ * const eithers = [Left("NaN"), Right(2), Left("NaN")]
+ * lefts(eithers) // ["NaN", "NaN"]
+ *
+ * const eithers2 = [Right(1), Right(2), Right(3)]
+ * lefts(eithers2) // []
  */
 export function lefts<L, R>(es: Either<L, R>[]): L[] {
   return es.reduce((acc, e) => {
-    if (e.isLeft()) return [...acc, e.reason];
+    if (e.isRight()) return acc;
 
-    return acc;
+    return [...acc, e.reason];
   }, [] as L[]);
 }
 
@@ -318,6 +342,12 @@ export function lefts<L, R>(es: Either<L, R>[]): L[] {
  * @param r A nullable value, i.e. _value that can hold `null` or `undefined` or both_
  * @param onNullable Default error value if the value is nullable
  * @returns `Either` with the value or the default error
+ * @example
+ * const p: number | undefined = undefined
+ * nullableToEither(p, "still undefined") // Left("still undefined")
+ *
+ * p = 10
+ * nullableToEither(p) // Right(10)
  */
 export function nullableToEither<L, R>(r: R, onNullable: L): Either<L, R> {
   if (r === null || r === undefined) return Left(onNullable);

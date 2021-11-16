@@ -3,228 +3,393 @@ import {
   Left,
   Either,
   rights,
-  rightsOrAllLeft,
   lefts,
-  rightsOrLeft,
   firstRight,
   nullableToEither,
+  sequenceEither,
+  rightsOr,
 } from "../src/either";
-import { Just, Nothing } from "../src/maybe";
 
-test("'isRight'", () => {
-  const right = Right<string, string>("hello");
+describe("'isRight", () => {
+  test("should return 'true' when called on 'Right'", () => {
+    expect(Right("hello world").isRight()).toBe(true);
+  });
 
-  expect(right.isRight()).toBe(true);
-  expect(right.isLeft()).toBe(false);
+  test("should return 'false' when called on 'Left'", () => {
+    expect(Left("error").isRight()).toBe(false);
+  });
 });
 
-test("'isLeft'", () => {
-  const left = Left<string, string>("error");
+describe("'isLeft'", () => {
+  test("should return 'true' when called on 'Left'", () => {
+    expect(Left("error").isLeft()).toBe(true);
+  });
 
-  expect(left.isRight()).toBe(false);
-  expect(left.isLeft()).toBe(true);
+  test("should return 'false' when called on 'Right'", () => {
+    expect(Right("hello world").isLeft()).toBe(false);
+  });
 });
 
-test("'map'", () => {
-  const right = Right<string, string>("hello").map((r) => r + " world");
-  const left = Left<string, string>("error").map((r) => r + " world");
+describe("'onRight'", () => {
+  test("should call a given callback function when called on 'Right'", () => {
+    let p = 0;
+    const either = Right("hello world");
+    either.onRight((_) => (p = 10));
 
-  expect(right.isRight()).toBe(true);
-  if (right.isRight()) expect(right.value).toBe("hello world");
+    expect(p).toBe(10);
+  });
 
-  expect(left.isLeft()).toBe(true);
-  if (left.isLeft()) expect(left.reason).toBe("error");
+  test("should NOT call a given callback function when called on 'Left'", () => {
+    let p = 0;
+    const either = Left("some error");
+    either.onRight((_) => (p = 10));
+
+    expect(p).toBe(0);
+  });
 });
 
-test("'bind'", () => {
-  const right1 = Right<string, string>("hello").bind((r) => Right(r.length));
-  const right2 = Right<string, string>("hello").bind((r) => Left("error"));
-  const left = Left<string, string>("error").bind((r) => Right(r.length));
+describe("'onLeft'", () => {
+  test("should call a given callback function when called on 'Left'", () => {
+    let p = 0;
+    const either = Left("some error");
+    either.onLeft((_) => (p = 10));
 
-  expect(right1.isRight()).toBe(true);
-  if (right1.isRight()) expect(right1.value).toBe(5);
+    expect(p).toBe(10);
+  });
 
-  expect(right2.isLeft()).toBe(true);
-  if (right2.isLeft()) expect(right2.reason).toBe("error");
+  test("should NOT call a given callback function when called on 'Right'", () => {
+    let p = 0;
+    const either = Right("hello world");
+    either.onLeft((_) => (p = 10));
 
-  expect(left.isLeft()).toBe(true);
-  if (left.isLeft()) expect(left.reason).toBe("error");
+    expect(p).toBe(0);
+  });
 });
 
-test("'fold'`", () => {
-  const right = Right<string, string>("hello").fold(5, (r) => r.length);
-  const left = Left<string, string>("error").fold(5, (r) => r.length);
+describe("'map'", () => {
+  test("should apply a given function over a value inside a 'Right'", () => {
+    const either = Right("hello").map((r) => r + " world");
 
-  expect(right).toBe(5);
-  expect(left).toBe(5);
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe("hello world"));
+  });
+
+  test("should not be called on 'Left'", () => {
+    let p = 0;
+    const either = Left<string, string>("error").map((r) => {
+      p = 10;
+      return r + " world";
+    });
+
+    expect(p).toBe(0);
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
+  });
 });
 
-test("'mapAsync'", async () => {
+describe("'bind'", () => {
+  test("should apply a given function over a value inside a 'Right'", () => {
+    const either = Right("hello").bind((r) => Right(r + " world"));
+
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe("hello world"));
+  });
+
+  test("should turn a 'Right' into a 'Left' if the 'bind' function returns so", () => {
+    const either = Right("hello").bind((_) => Left("error"));
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
+  });
+
+  test("should NOT call provided function on 'Left'", () => {
+    let p = 0;
+    const either = Left("error").bind((r) => {
+      p = 10;
+      return Right(r + " world");
+    });
+
+    expect(p).toBe(0);
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
+  });
+});
+
+describe("'fold'", () => {
+  test("should apply a given function over a value on a 'Right' and return the result", () => {
+    const value = Right("hello world").fold(100, (r) => r.length);
+    expect(value).toBe(11);
+  });
+
+  test("should return the default value when called on 'Left'", () => {
+    const value = Left<string, string>("error").fold(100, (r) => r.length);
+    expect(value).toBe(100);
+  });
+
+  test("should NOT execute the given function and return the default value when called on 'Left'", () => {
+    let p = 0;
+    Left<string, string>("error").fold(100, (r) => {
+      p = 10;
+      return 1000;
+    });
+
+    expect(p).toBe(0);
+  });
+});
+
+describe("'mapAsync'", () => {
   const asyncFunc = (r: string) => new Promise((resolve) => resolve(r.length));
-  const right = await Right<string, string>("hello").mapAsync(asyncFunc);
-  const left = await Left<string, string>("error").mapAsync(asyncFunc);
 
-  expect(right.isRight()).toBe(true);
-  if (right.isRight()) expect(right.value).toBe(5);
+  test("should apply a given function over a value inside a 'Right'", async () => {
+    const either = await Right<string, string>("hello world").mapAsync(asyncFunc);
 
-  expect(left.isLeft()).toBe(true);
-  if (left.isLeft()) expect(left.reason).toBe("error");
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe(11));
+  });
+
+  test("should not be called on 'Left'", async () => {
+    const either = await Left<string, string>("error").mapAsync(asyncFunc);
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
+  });
 });
 
-test("'bindAsync'", async () => {
-  const asyncFunc = (r: string) =>
-    new Promise<Either<string, number>>((resolve) => resolve(Right(r.length)));
-  const right1 = await Right<string, string>("hello").bindAsync(asyncFunc);
+describe("'bindAsync'", () => {
+  test("should apply a given function over a value inside a 'Right'", async () => {
+    const either = await Right<string, string>("hello world").bindAsync(
+      (r: string) => new Promise<Either<string, number>>((resolve) => resolve(Right(r.length))),
+    );
 
-  const right2 = await Right<string, string>("hello").bindAsync(
-    (r: string) => new Promise<Either<string, number>>((resolve) => resolve(Left("error"))),
-  );
-  const left = await Left<string, string>("error").bindAsync(asyncFunc);
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe(11));
+  });
 
-  expect(right1.isRight()).toBe(true);
-  if (right1.isRight()) expect(right1.value).toBe(5);
+  test("should turn a 'Right' into a 'Left' if the 'bind' function returns so", async () => {
+    const either = await Right<string, string>("hello world").bindAsync(
+      (_r) => new Promise<Either<string, number>>((resolve) => resolve(Left("error"))),
+    );
 
-  expect(right2.isLeft()).toBe(true);
-  if (right2.isLeft()) expect(right2.reason).toBe("error");
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
+  });
 
-  expect(left.isLeft()).toBe(true);
-  if (left.isLeft()) expect(left.reason).toBe("error");
+  test("should NOT be called if called on 'Left'", async () => {
+    let p = 0;
+    const either = await Left<string, string>("error").bindAsync(
+      (_r) =>
+        new Promise<Either<string, number>>((resolve) => {
+          p = 10;
+          resolve(Right(100));
+        }),
+    );
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
+    expect(p).toBe(0);
+  });
 });
 
-test("'foldAsync'", async () => {
+describe("'foldAsync'", () => {
   const asyncFunc = (r: string) => new Promise((resolve) => resolve(r.length));
-  const right = await Right<string, string>("hello").foldAsync(5, asyncFunc);
-  const left = await Left<string, string>("error").foldAsync(5, asyncFunc);
 
-  expect(right).toBe(5);
-  expect(left).toBe(5);
+  test("should apply a given function over a value on a 'Right' and return the result", async () => {
+    const value = await Right("hello world").foldAsync(100, asyncFunc);
+    expect(value).toBe(11);
+  });
+
+  test("should return the default value when called on 'Left'", async () => {
+    const value = await Left<string, string>("error").foldAsync(100, asyncFunc);
+    expect(value).toBe(100);
+  });
+
+  test("should NOT call the given function when called on 'Left'", async () => {
+    let p = 0;
+    await Left("error").foldAsync(
+      100,
+      (_r) =>
+        new Promise((resolve) => {
+          p = 10;
+          resolve(101);
+        }),
+    );
+    expect(p).toBe(0);
+  });
 });
 
-test("'onRight/onLeft' with `Right`", () => {
-  let val = 0;
-  const right = Right<string, string>("hello")
-    .onRight((_r) => (val = 10))
-    .onLeft((_l) => (val = 20));
+describe("'toMaybe'", () => {
+  test("should return 'Just' when called on 'Right'", () => {
+    const maybe = Right<string, string>("hello world")
+      .map((r) => r.length)
+      .toMaybe();
 
-  expect(right.isRight()).toBe(true);
-  if (right.isRight()) expect(right.value).toBe("hello");
+    expect(maybe.isJust()).toBe(true);
+    expect(maybe.isNothing()).toBe(false);
+    maybe.onJust((j) => expect(j).toBe(11));
+  });
 
-  expect(val).toBe(10);
+  test("should return 'Nothing' when called on 'Left'", () => {
+    const maybe = Left<string, string>("error")
+      .map((r) => r.length)
+      .toMaybe();
+
+    expect(maybe.isJust()).toBe(false);
+    expect(maybe.isNothing()).toBe(true);
+  });
 });
 
-test("'onRight/onLeft' with `Left`", () => {
-  let val = 0;
-  const left = Left<string, string>("error")
-    .onRight((_r) => (val = 10))
-    .onLeft((_l) => (val = 20));
+describe("'fromRight", () => {
+  test("should return it's value when called on 'Right'", () => {
+    const either = Right("hello world").fromRight("default value");
+    expect(either).toBe("hello world");
+  });
 
-  expect(left.isLeft()).toBe(true);
-  expect(val).toBe(20);
+  test("should return provided default value when called on 'Left'", () => {
+    const either = Left("error").fromRight("default value");
+    expect(either).toBe("default value");
+  });
 });
 
-test("'toMaybe'", () => {
-  const rightMaybe = Right<string, string>("hello")
-    .map((r) => r.length)
-    .toMaybe();
-  const leftMaybe = Left<string, string>("error")
-    .map((r) => r.length)
-    .toMaybe();
+describe("'fromLeft'", () => {
+  test("should return it's reason when called on 'Left'", () => {
+    const either = Left("error").fromLeft("default error");
+    expect(either).toBe("error");
+  });
 
-  expect(rightMaybe.isJust()).toBe(true);
-  if (rightMaybe.isJust()) expect(rightMaybe.value).toBe(5);
-
-  expect(leftMaybe.isNothing()).toBe(true);
+  test("should return provided default value when called on 'Right'", () => {
+    const either = Right("hello world").fromLeft("default error");
+    expect(either).toBe("default error");
+  });
 });
 
-test("'fromRight'", () => {
-  const right = Right("hello world").fromRight("empty");
+describe("'rights'", () => {
+  test("should return all 'Right' elements from a list of 'Either's", () => {
+    const es = [Right(1), Right(2), Left("NaN"), Right(4), Right(5), Left("NaN"), Left("NaN")];
+    expect(rights(es)).toEqual([1, 2, 4, 5]);
+  });
 
-  expect(right).toBe("hello world");
+  test("should return empty list if no 'Right' values are present", () => {
+    const es = [Left("error"), Left("error"), Left("error")];
+    expect(rights(es)).toEqual([]);
+  });
 });
 
-test("'fromLeft'", () => {
-  const left = Left("some error here").fromLeft("there is no error");
+describe("'rightsOr'", () => {
+  test("should return all 'Right's from a list of 'Either's", () => {
+    const es = [Right(1), Left("NaN"), Right(3)];
+    const either = rightsOr(es, "default error");
 
-  expect(left).toBe("some error here");
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toEqual([1, 3]));
+  });
+
+  test("should return a 'Left' with the provided default reason if all values are 'Left's", () => {
+    const es = [Left("NaN"), Left("NaN"), Left("NaN")];
+    const either = rightsOr(es, "default error");
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toEqual("default error"));
+  });
 });
 
-test("'rights'", () => {
-  const eithers: Either<string, number>[] = [
-    Right(1),
-    Right(2),
-    Left("NaN"),
-    Right(4),
-    Right(5),
-    Left("NaN"),
-    Left("NaN"),
-  ];
+describe("sequenceEither", () => {
+  test("should return an 'Right' with a list of 'Right' if all values are 'Right's", () => {
+    const es = [Right(1), Right(2), Right(3)];
+    const either = sequenceEither(es);
 
-  expect(rights(eithers)).toEqual([1, 2, 4, 5]);
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toEqual([1, 2, 3]));
+  });
+
+  test("should return the first 'Left' it encounters if there is a 'Left'", () => {
+    const es = [Right(1), Left("NaN1"), Right(3), Left("NaN2")];
+    const either = sequenceEither(es);
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("NaN1"));
+  });
 });
 
-test("'rightsOrAllLeft'", () => {
-  const eithers: Either<string, number>[] = [Left("NaN"), Left("NaN"), Left("NaN")];
+describe("'firstRight'", () => {
+  test("should return the first 'Right' out of list of 'Either's 1", () => {
+    const es = [Left("NaN"), Left("NaN"), Right(3)];
+    const either = firstRight(es, "default error");
 
-  const res = rightsOrAllLeft(eithers, "All are lefts");
-  expect(res.isLeft()).toBe(true);
-  if (res.isLeft()) expect(res.reason).toBe("All are lefts");
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe(3));
+  });
+
+  test("should return the first 'Right' out of list of 'Either's 2", () => {
+    const es = [Right(1), Left("NaN"), Right(3)];
+    const either = firstRight(es, "default error");
+
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe(1));
+  });
+
+  test("should return a 'Left' with the provided default reason from a list of 'Either's with no 'Right's", () => {
+    const es = [Left("NaN"), Left("NaN"), Left("NaN")];
+    const either = firstRight(es, "default error");
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("default error"));
+  });
 });
 
-test("'rightsOrLeft'", () => {
-  const rights: Either<string, number>[] = [Right(1), Right(2), Right(3)];
-  const eithers: Either<string, number>[] = [Right(1), Right(2), Left("NaN")];
+describe("'lefts'", () => {
+  test("should return a list with all 'Left' reasons from a list of 'Either's", () => {
+    const es = [Right(1), Left("NaN1"), Right(3), Right(4), Left("NaN2"), Left("NaN3")];
+    expect(lefts(es)).toEqual(["NaN1", "NaN2", "NaN3"]);
+  });
 
-  const res = rightsOrLeft(rights);
-  expect(res.isRight()).toBe(true);
-  if (res.isRight()) expect(res.value).toEqual([1, 2, 3]);
-
-  const res2 = rightsOrLeft(eithers);
-  expect(res2.isRight()).toBe(false);
-  if (res2.isLeft()) expect(res2.reason).toBe("NaN");
+  test("should return an empty list from a list of 'Either's with no 'Left's", () => {
+    const es = [Right(1), Right(2)];
+    expect(lefts(es)).toEqual([]);
+  });
 });
 
-test("'firstRight'", () => {
-  const hasRight1: Either<string, number>[] = [Left("NaN"), Left("NaN"), Right(3)];
-  const hasRight2: Either<string, number>[] = [Right(1), Left("NaN"), Right(3)];
-  const hasntRight: Either<string, number>[] = [Left("NaN"), Left("NaN"), Left("NaN")];
+describe("'nullableToEither", () => {
+  test("should return 'Right' with it's value if it's not 'null' nor 'undefined'", () => {
+    let p = 10;
+    const either = nullableToEither(p, "default, error");
 
-  const res = firstRight(hasRight1, "all are lefts");
-  expect(res.isRight()).toBe(true);
-  if (res.isRight()) expect(res.value).toBe(3);
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe(10));
+  });
 
-  const res1 = firstRight(hasRight2, "all are lefts");
-  expect(res1.isRight()).toBe(true);
-  if (res1.isRight()) expect(res1.value).toBe(1);
+  test("should return 'Left' with provided default reason when called on null", () => {
+    let p: number | null = null;
+    const either = nullableToEither(p, "default error");
 
-  const res2 = firstRight(hasntRight, "all are lefts");
-  expect(res2.isRight()).toBe(false);
-  if (res2.isLeft()) expect(res2.reason).toBe("all are lefts");
-});
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("default error"));
+  });
 
-test("'lefts'", () => {
-  const eithers: Either<string, number>[] = [
-    Right(1),
-    Right(2),
-    Left("NaN"),
-    Right(4),
-    Right(5),
-    Left("NaN"),
-    Left("NaN"),
-  ];
+  test("should return 'Left' with provided default reason when called on undefined", () => {
+    let p: number | undefined = undefined;
+    const either = nullableToEither(p, "default error");
 
-  expect(lefts(eithers)).toEqual(["NaN", "NaN", "NaN"]);
-});
-
-test("'nullableToEither'", () => {
-  let p: number | undefined = undefined;
-  const left = nullableToEither(p, "Not defined");
-
-  p = 10;
-  const right = nullableToEither(p, "Not defined");
-
-  expect(left.isLeft()).toBe(true);
-  left.onLeft((l) => expect(l).toBe("Not defined"));
-
-  expect(right.isRight()).toBe(true);
-  right.onRight((r) => expect(r).toBe(10));
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("default error"));
+  });
 });
