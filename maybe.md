@@ -83,41 +83,6 @@ const nothing = Nothing().fold("Hello World", (v) => v + " World"); // "Hello Wo
 
 _You cannot chain the `fold` function since it return a pure value and not a `Maybe`._
 
-### otherwise
-
-`otherwise` takes a default value and if it's called on `Nothing` it will return that default value. If it's a `Just` it will return the value of the `Just`.
-
-Example here:
-
-```ts
-const just = Just("hello").or("hello world"); // "hello"
-const nothing = Nothing().or("hello world"); // "hello world"
-```
-
-### onJust
-
-`onJust` is a function that takes a callback function that will execute only if the `Maybe` is a `Just` and it will return the `Just` as it was. If the `Maybe` is a `Nothing`, this function will not be called and it will still return you the `Nothing`.
-
-Let's see how to use it:
-
-```ts
-const just = Just("hello")
-  .map((v) => v + " world")
-  .onJust((v) => console.info(`We have a just with value: ${v}`)); // Just("hello world")
-```
-
-### onNothing
-
-`onNothing` works exactly the same a `onJust` but the opposite way. The only difference is that we cannot access a value (like we do on `onJust`)
-
-Lets see:
-
-```ts
-const nothing = Just("hey")
-  .bind((_v) => Nothing())
-  .onNothing(() => console.error("dang it, it's a Nothing")); // Nothing()
-```
-
 ### mapAsync
 
 `mapAsync` is just the same as `map` but you can call an `async` function inside it.
@@ -166,6 +131,41 @@ const just = await Just("hello").foldAsync("hello world", (v) => {
 const nothing = await Nothing().foldAsync("hello world", (v) => {
   return new Promise((resolve) => resolve(v + "world"));
 }); // "hello world"
+```
+
+### otherwise
+
+`otherwise` takes a default value and if it's called on `Nothing` it will return that default value. If it's a `Just` it will return the value of the `Just`.
+
+Example here:
+
+```ts
+const just = Just("hello").or("hello world"); // "hello"
+const nothing = Nothing().or("hello world"); // "hello world"
+```
+
+### onJust
+
+`onJust` is a function that takes a callback function that will execute only if the `Maybe` is a `Just` and it will return the `Just` as it was. If the `Maybe` is a `Nothing`, this function will not be called and it will still return you the `Nothing`.
+
+Let's see how to use it:
+
+```ts
+const just = Just("hello")
+  .map((v) => v + " world")
+  .onJust((v) => console.info(`We have a just with value: ${v}`)); // Just("hello world")
+```
+
+### onNothing
+
+`onNothing` works exactly the same a `onJust` but the opposite way. The only difference is that we cannot access a value (like we do on `onJust`)
+
+Lets see:
+
+```ts
+const nothing = Just("hey")
+  .bind((_v) => Nothing())
+  .onNothing(() => console.error("dang it, it's a Nothing")); // Nothing()
 ```
 
 ### isJust

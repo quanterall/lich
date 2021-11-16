@@ -83,30 +83,6 @@ const left = Left("some error..").fold("Hello World", (v) => v + " World"); // "
 
 _You cannot chain the `fold` function since it return a pure value and not an `Either`._
 
-### onRight
-
-`onRight` is a function that takes a callback function that will execute only if the `Either` is a `Right` and it will return the `Right` as it was. If the `Either` is a `Left`, this function will not be called and it will still return you the `Left`.
-
-Let's see how to use it:
-
-```ts
-const right = Right("hello")
-  .map((v) => v + " world")
-  .onJust((v) => console.info(`We have a just with value: ${v}`)); // Right("hello world")
-```
-
-### onLeft
-
-`onLeft` is the opposite of `onRight`
-
-Lets see:
-
-```ts
-const right = Right("hello world")
-  .bind((_v) => Left("some error.."))
-  .onLeft((l) => console.error("Failed with error: " + l)); // Left("some error..")
-```
-
 ### mapAsync
 
 `mapAsync` is just the same as `map` but you can call an `async` function inside it.
@@ -155,6 +131,30 @@ const right = await Right("hello").foldAsync("hello world", (v) => {
 const left = await Left("some error..").foldAsync("hello world", (v) => {
   return new Promise((resolve) => resolve(v + "world"));
 }); // "hello world"
+```
+
+### onRight
+
+`onRight` is a function that takes a callback function that will execute only if the `Either` is a `Right` and it will return the `Right` as it was. If the `Either` is a `Left`, this function will not be called and it will still return you the `Left`.
+
+Let's see how to use it:
+
+```ts
+const right = Right("hello")
+  .map((v) => v + " world")
+  .onJust((v) => console.info(`We have a just with value: ${v}`)); // Right("hello world")
+```
+
+### onLeft
+
+`onLeft` is the opposite of `onRight`
+
+Lets see:
+
+```ts
+const right = Right("hello world")
+  .bind((_v) => Left("some error.."))
+  .onLeft((l) => console.error("Failed with error: " + l)); // Left("some error..")
 ```
 
 ### isRight
