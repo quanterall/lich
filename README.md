@@ -5,7 +5,7 @@ The goal of lich is to improve code flow, quality and reliability.
 
 # Why lich?
 
-Because it will bring new and refreshing concepts and will add safety and reliability to your code base.
+Because it will bring new and refreshing concepts that will add safety and reliability to your code base.
 
 # How does it work?
 
