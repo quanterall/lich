@@ -1,15 +1,87 @@
-# What is lich?
+## What is lich?
 
 Lich is a library for chaining computations in TypeScript. It's heavily inspired by the monadic structures in Haskell. In particular `Maybe` and `Either`.
-The goal of lich is to improve code flow, quality and reliability.
+The goal of lich is to improve flow, quality and reliability of your code.
 
-# Why lich?
+## Why lich?
 
 Because it will bring new and refreshing concepts that will add safety and reliability to your code base.
 
-# How does it work?
+## How does it work?
 
-Let's say we are supposed to do the following:
+Let's say you want to trim a string, but you only want to work with it, if it's not empty?
+This is how you may go about it, using `lich`:
+
+```ts
+function main(s: string): void {
+  safeTrim(s)
+    .map((j) => j.toUpperCase())
+    .bind(removePs) // Maybe remove the 'p's in the text.
+    .bind(clearSpaces); // Maybe clear up the spaces.
+}
+
+function safeTrim(s: string): Maybe<string> {
+  const trimmed = s.trim();
+  if (trimmed.length === 0) return Nothing();
+
+  return Just(trimmed);
+}
+
+function removePs(s: string): Maybe<string> {
+  const res = s.replace(/p/g, "");
+  if (res.length === 0) return Nothing();
+
+  return Just(res);
+}
+
+function clearSpaces(s: string): Maybe<string> {
+  const res = s.replace(/ +/g, " ").trim(); // We want only one space between words
+  if (res.length === 0) return Nothing();
+
+  return Just(res);
+}
+```
+
+If you care about in which step things went wrong you can use `Either` to track your errors:
+
+```ts
+function main(s: string): void {
+  safeTrim(s)
+    .map((j) => j.toUpperCase())
+    .bind(removePs) // Either remove the 'p's in the text or return a `Left` with a reason.
+    .bind(clearSpaces) // Either clear up the spaces or return `Left` with a reason.
+    .onLeft((l) => console.error(l)); // Log the error to the console
+}
+
+function safeTrim(s: string): Either<string, string> {
+  const trimmed = s.trim();
+  if (trimmed.length === 0) return Left("Error in 'safeTrim': String is empty");
+
+  return Right(trimmed);
+}
+
+function removePs(s: string): Either<string, string> {
+  const res = s.replace(/p/g, "");
+  if (res.length === 0) return Left("Error in 'removePs': String is empty");
+
+  return Right(res);
+}
+
+function clearSpaces(s: string): Either<string, string> {
+  const res = s.replace(/ +/g, " ").trim(); // We want only one space between words.
+  if (res.length === 0) return Left("Error in 'clearSpaces': String is empty");
+
+  return Right(res);
+}
+```
+
+As you can see only the implementation of the functions changed. So it's easy to move from `Maybe` to `Either` if your flow requires it in the future.
+
+---
+
+Let's follow a different problem, and possible solutions that we might implement to solve it.
+
+We have the following task:
 
 - Get an input
 - Validate it using the following rules
