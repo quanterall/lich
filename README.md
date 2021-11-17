@@ -9,7 +9,7 @@ Because it will bring new and refreshing concepts that will add safety and relia
 
 ## How does it work?
 
-Let's say you want to trim a string, but you only want to work with it, if it's not empty?
+Let's say you want to apply several functions to a string, but you only want to work with it, if it's not empty at the end of each one of them?
 This is how you may go about it, using `lich`:
 
 ```ts
