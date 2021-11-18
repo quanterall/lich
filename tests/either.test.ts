@@ -8,6 +8,7 @@ import {
   nullableToEither,
   sequenceEither,
   rightsOr,
+  fromTry,
 } from "../src/either";
 
 describe("'isRight", () => {
@@ -403,5 +404,25 @@ describe("'nullableToEither", () => {
     expect(either.isRight()).toBe(false);
     expect(either.isLeft()).toBe(true);
     either.onLeft((l) => expect(l).toBe("default error"));
+  });
+});
+
+describe("'fromTry'", () => {
+  test("should return a 'Right' if no exception is thrown", () => {
+    const p = 1;
+    const either = fromTry(() => p.toPrecision(3), "some error");
+
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe("1.00"));
+  });
+
+  test("should return a 'Left' with the default value if an exception is thrown", () => {
+    const p = 1;
+    const either = fromTry(() => p.toPrecision(300), "some error");
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("some error"));
   });
 });

@@ -271,3 +271,17 @@ export function nullableToMaybe<J>(j: J): Maybe<J> {
   if (j === null || j === undefined) return Nothing();
   return Just(j);
 }
+
+/**
+ * Takes a `throwable` function and executes it. If it throws return `Nothing`,
+ * otherwise return `Just` with the result.
+ * @param f `throwable` function
+ * @returns Maybe of the result
+ */
+export function fromTry<J>(f: () => J): Maybe<J> {
+  try {
+    return Just(f());
+  } catch (_e) {
+    return Nothing();
+  }
+}

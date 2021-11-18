@@ -1,4 +1,4 @@
-import { Just, justs, Maybe, Nothing, nullableToMaybe, sequenceMaybe } from "../src/maybe";
+import { fromTry, Just, justs, Maybe, Nothing, nullableToMaybe, sequenceMaybe } from "../src/maybe";
 
 describe("'isJust'", () => {
   test("should return 'true' when called on 'Just'", () => {
@@ -307,6 +307,25 @@ describe("'nullableToMaybe", () => {
   test("should return 'Nothing' with provided default reason when called on undefined", () => {
     let p: number | undefined = undefined;
     const maybe = nullableToMaybe(p);
+
+    expect(maybe.isJust()).toBe(false);
+    expect(maybe.isNothing()).toBe(true);
+  });
+});
+
+describe("'fromTry'", () => {
+  test("should return a 'Just' if no exception is thrown", () => {
+    const p = 1;
+    const maybe = fromTry(() => p.toPrecision(3));
+
+    expect(maybe.isJust()).toBe(true);
+    expect(maybe.isNothing()).toBe(false);
+    maybe.onJust((j) => expect(j).toBe("1.00"));
+  });
+
+  test("should return a 'Nothing' if an exception is thrown", () => {
+    const p = 1;
+    const maybe = fromTry(() => p.toPrecision(300));
 
     expect(maybe.isJust()).toBe(false);
     expect(maybe.isNothing()).toBe(true);

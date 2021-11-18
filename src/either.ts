@@ -367,3 +367,18 @@ export function nullableToEither<L, R>(r: R, onNullable: L): Either<L, R> {
   if (r === null || r === undefined) return Left(onNullable);
   return Right(r);
 }
+
+/**
+ * Takes a `throwable` function and a default value. When executing the given function
+ * if it throws return `Left` with the provided default value,
+ * otherwise return `Right` with the result.
+ * @param f `throwable` function
+ * @returns Either of the result
+ */
+export function fromTry<L, R>(f: () => R, onCatch: L): Either<L, R> {
+  try {
+    return Right(f());
+  } catch (_e) {
+    return Left(onCatch);
+  }
+}
