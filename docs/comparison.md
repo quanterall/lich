@@ -8,9 +8,9 @@ Let's say that your program has an input of a string. That string should be a JS
 
 There are numbers of ways we could go about this problem in Typescript:
 
-- [throw + try/catch](#throw+try/catch)
-- [create CustomError type and return data ot CustomError](#create-customerror-type)
-- [using lich](#using-lich)
+- [Throw + try/catch](#throw+try/catch)
+- [Create CustomError type and return data ot CustomError](#create-customerror-type)
+- [Using lich](#using-lich)
 
 ## Throw + try/catch
 
