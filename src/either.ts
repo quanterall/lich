@@ -82,6 +82,18 @@ interface EitherUtilities<L, R> {
    */
   foldAsync<T>(defaultR: T, f: (r: R) => Promise<T>): Promise<T>;
   /**
+   * If the value of the `Either` is `Left` it will return the
+   * supplied default value, if it is `Right` it will return it's value.
+   * @param onNothing Default return value if the `Either` is `Left`
+   * @example
+   * const either1 = Left("error")
+   * either1.otherwise(11) // 11
+   *
+   * const either2 = Right(10)
+   * either2.otherwise(100) // 11
+   */
+  otherwise(onLeft: R): R;
+  /**
    * Executes a callback function if the value of the `Either` is `Right` and returns the `Either`.
    * @param f Callback function
    * @example
@@ -194,6 +206,7 @@ export function Right<L, R>(r: R): Either<L, R> {
     mapAsync: async (f) => Right(await f(r)),
     bindAsync: async (f) => await f(r),
     foldAsync: async (_d, f) => await f(r),
+    otherwise: (_d) => r,
     onRight: (f) => {
       f(r);
       return Right(r);
@@ -222,6 +235,7 @@ export function Left<L, R>(l: L): Either<L, R> {
     mapAsync: async (_f) => Left(l),
     bindAsync: async (_f) => Left(l),
     foldAsync: async (d, _f) => d,
+    otherwise: (d) => d,
     onRight: () => Left(l),
     onLeft: (f) => {
       f(l);

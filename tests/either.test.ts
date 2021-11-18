@@ -142,6 +142,18 @@ describe("'fold'", () => {
   });
 });
 
+describe("'otherwise'", () => {
+  test("should return the value of a 'Right' when called on a 'Right'", () => {
+    const either = Right("hello world").otherwise("hello world!!!");
+    expect(either).toBe("hello world");
+  });
+
+  test("should return the provided default value when called on a 'Nothing'", () => {
+    const either = Left("error").otherwise("hello world!!!");
+    expect(either).toBe("hello world!!!");
+  });
+});
+
 describe("'mapAsync'", () => {
   const asyncFunc = (r: string) => new Promise((resolve) => resolve(r.length));
 

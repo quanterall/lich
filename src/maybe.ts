@@ -78,8 +78,8 @@ interface MaybeUtilities<J> {
    */
   foldAsync<T>(onNothing: T, f: (j: J) => Promise<T>): Promise<T>;
   /**
-   * If the value of the `Maybe` is `Nothing` it will return a `Just`
-   * with the supplied value, if it is `Just` it will return it
+   * If the value of the `Maybe` is `Nothing` it will return the
+   * supplied default value, if it is `Just` it will return it's value.
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    * @example
    * const nothing = Nothing()
