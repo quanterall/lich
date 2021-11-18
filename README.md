@@ -13,8 +13,8 @@ Let's say you want to apply several functions to a string, but you only want to 
 This is how you may go about it, using `lich`:
 
 ```ts
-function main(s: string): void {
-  safeTrim(s)
+export function parseString(s: string): Maybe<string> {
+  return safeTrim(s)
     .map((j) => j.toUpperCase())
     .bind(removePs) // Maybe remove the 'p's in the text.
     .bind(clearSpaces); // Maybe clear up the spaces.
@@ -45,8 +45,8 @@ function clearSpaces(s: string): Maybe<string> {
 If you care about in which step things went wrong you can use `Either` to track your errors:
 
 ```ts
-function main(s: string): void {
-  safeTrim(s)
+export function parseString(s: string): Either<string, string> {
+  return safeTrim(s)
     .map((j) => j.toUpperCase())
     .bind(removePs) // Either remove the 'p's in the text or return a `Left` with a reason.
     .bind(clearSpaces) // Either clear up the spaces or return `Left` with a reason.

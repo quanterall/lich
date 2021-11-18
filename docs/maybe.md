@@ -209,7 +209,7 @@ if (!maybe.isNothing()) {
 
 ### toEither
 
-Turn a `Maybe` into `Either`. If we call it `Nothing` it takes the default value as a reason for `Left`:
+Turn a `Maybe` into `Either`. If we call it on `Nothing` it takes the default value as a reason for `Left`:
 
 ```ts
 const either1 = Just("hello world").toEither(); // Right("hello world")
