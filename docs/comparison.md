@@ -63,7 +63,7 @@ The issue with this approach is the `try/catch` nesting that we end up with, if 
 Additionally, you might forget that your function can actually throw, and call it without `try/catch`, or expect that somewhere on an upper level, some caller function will catch it. And now we are starting to make assumptions, which is already bad.
 This means that if you don't want to handle the `try/catch`, you have to verify that some other upper function will catch your throw. (_This doesn't scale. At some point it will be too hard to follow._)
 
---
+---
 
 ## Create CustomError type
 
@@ -140,7 +140,7 @@ function validatePost(json: Record<string, unknown>): CustomError | Post {
 Now when we call our functions, the compiler will not allow us to expect that it finished successfully. We'll need to check what is the return type and only then we would be able to work with the value. This is good, because the compiler will save us from making a mistake.
 But it's still not the best, because we still have this `if` nesting in order to work with the errors.
 
---
+---
 
 Now let's see how `lich` fixes these issues:
 
