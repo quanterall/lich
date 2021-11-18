@@ -15,24 +15,25 @@ The `Maybe` type export couple of useful function, let's examine what they are a
 - [onNothing](#onnothing)
 - [isJust](#isjust)
 - [isNothing](#isnothing)
+- [toEither](#toeither)
 
 ### map
 
 `map` is a function that takes another `mapping` function that will be applied to our `Maybe` only if the value inside is a `Just` (this means that we know that we are transforming our value only when there is actually a value inside). If the value inside our `Maybe` is `Nothing`, nothing will change, we'll still have our `Nothing` as the value.
 
 ```ts
-const value = Just("hello world");
-value.map((v) => v + "!"); // Just("hello world!")
+const maybe = Just("hello world");
+maybe.map((v) => v + "!"); // Just("hello world!")
 
-const value = Nothing();
-value.map((v) => v + "!"); // Nothing
+const maybe = Nothing();
+maybe.map((v) => v + "!"); // Nothing
 ```
 
 And you can call as much of these `map` function as you like:
 
 ```ts
-const value = Just("hello world");
-value
+const maybe = Just("hello world");
+maybe
   .map((v) => v + "!") // Just("hello world!")
   .map((v) => v.charAt(0).toUpperCase() + v.slice(1)); // Just("Hello world!")
 ```
@@ -40,8 +41,8 @@ value
 Another cool thing about map is that you can even change the type of the value inside:
 
 ```ts
-const value = Just("hello world");
-value.map((v) => v.length); // Just(11)
+const maybe = Just("hello world");
+maybe.map((v) => v.length); // Just(11)
 ```
 
 ### bind
@@ -51,14 +52,14 @@ value.map((v) => v.length); // Just(11)
 Lets see an example of this:
 
 ```ts
-const just = Just(" Hello World  ").bind(nonEmptyString); // Just("Hello World")
-const nothing = Just("   ").bind(nonEmptyString); // Nothing
+const maybe1 = Just(" Hello World  ").bind(nonEmptyString); // Just("Hello World")
+const maybe2 = Just("   ").bind(nonEmptyString); // Nothing
 
 // And of course you can chain these calls
-just.map((v) => v + " !"); // Just("Hello World!")
+maybe1.map((v) => v + " !"); // Just("Hello World!")
 
 // or at the same time
-const just = Just(" Hello World  ")
+const maybe3 = Just(" Hello World  ")
   .bind(nonEmptyString)
   .map((v) => v + " !"); // Just("Hello World!")
 
@@ -77,8 +78,8 @@ function nonEmptyString(s: string): Maybe<string> {
 Lets see this in action:
 
 ```ts
-const just = Just("Hello ").fold("Hello World", (v) => v + " World"); // "Hello World"
-const nothing = Nothing().fold("Hello World", (v) => v + " World"); // "Hello World"
+const maybe1 = Just("Hello ").fold("Hello World", (v) => v + " World"); // "Hello World"
+const maybe2 = Nothing().fold("Hello World", (v) => v + " World"); // "Hello World"
 ```
 
 _You cannot chain the `fold` function since it return a pure value and not a `Maybe`._
@@ -90,7 +91,7 @@ _You cannot chain the `fold` function since it return a pure value and not a `Ma
 Example:
 
 ```ts
-const just = await Just(1).mapAsync(myAsyncFunc); // Just(11)
+const maybe = await Just(1).mapAsync(myAsyncFunc); // Just(11)
 
 async function myAsyncFunc(v: number): Promise<number> {
   return new Promise((resolve) => resolve(v + 10));
@@ -104,7 +105,7 @@ async function myAsyncFunc(v: number): Promise<number> {
 Lets see:
 
 ```ts
-const just = await Just("hello world").bindAsync(myAsyncFunc); // Just(12)
+const maybe = await Just("hello world").bindAsync(myAsyncFunc); // Just(12)
 
 async function myAsyncFunc(s: string): Promise<Maybe<number>> {
   return new Promise<Maybe<number>>((resolve) => resolve(Just(v.length + 1)));
@@ -118,17 +119,17 @@ async function myAsyncFunc(s: string): Promise<Maybe<number>> {
 In action:
 
 ```ts
-const just = await Just("hello world").foldAsync(100, myAsyncFunc); // 12
+const maybe1 = await Just("hello world").foldAsync(100, myAsyncFunc); // 12
 
 async function myAsyncFunc(s: string): Promise<number> {
   return new Promise((resolve) => resolve(v.length + 1));
 }
 
-const just = await Just("hello").foldAsync("hello world", (v) => {
+const maybe2 = await Just("hello").foldAsync("hello world", (v) => {
   return new Promise((resolve) => resolve(v + "world"));
 }); // "hello world"
 
-const nothing = await Nothing().foldAsync("hello world", (v) => {
+const maybe3 = await Nothing().foldAsync("hello world", (v) => {
   return new Promise((resolve) => resolve(v + "world"));
 }); // "hello world"
 ```
@@ -140,8 +141,8 @@ const nothing = await Nothing().foldAsync("hello world", (v) => {
 Example here:
 
 ```ts
-const just = Just("hello").or("hello world"); // "hello"
-const nothing = Nothing().or("hello world"); // "hello world"
+const maybe1 = Just("hello").or("hello world"); // "hello"
+const maybe2 = Nothing().or("hello world"); // "hello world"
 ```
 
 ### onJust
@@ -151,7 +152,7 @@ const nothing = Nothing().or("hello world"); // "hello world"
 Let's see how to use it:
 
 ```ts
-const just = Just("hello")
+const maybe = Just("hello")
   .map((v) => v + " world")
   .onJust((v) => console.info(`We have a just with value: ${v}`)); // Just("hello world")
 ```
@@ -163,7 +164,7 @@ const just = Just("hello")
 Lets see:
 
 ```ts
-const nothing = Just("hey")
+const maybe = Just("hey")
   .bind((_v) => Nothing())
   .onNothing(() => console.error("dang it, it's a Nothing")); // Nothing()
 ```
@@ -175,11 +176,11 @@ const nothing = Just("hey")
 Let's see how this goes:
 
 ```ts
-const just = Just("this is awesome");
+const maybe = Just("this is awesome");
 
-// here if we try to access just.value, ts will complain to us
-if (just.isJust()) {
-  const nice = just.value; // here it's fine
+// here if we try to access maybe.value, ts will complain to us
+if (maybe.isJust()) {
+  const nice = maybe.value; // here it's fine
 }
 ```
 
@@ -187,7 +188,7 @@ Or we can do it the other way around
 
 ```ts
 function justOrThrow(maybe: Maybe<string>): string {
-  if (maybe.isNothing()) throw new Error("Maybe is not Just"); // before this line we cannot access `value` field
+  if (!maybe.isJust()) throw new Error("Maybe is not Just"); // before this line we cannot access `value` field
 
   return maybe.value;
 }
@@ -196,3 +197,21 @@ function justOrThrow(maybe: Maybe<string>): string {
 ### isNothing
 
 `isNothing` is just the opposite of `isJust`
+
+```ts
+const maybe = Just("hello world");
+
+// here if we try to access maybe.value, ts will complain to us
+if (!maybe.isNothing()) {
+  const nice = maybe.value; // here it's fine
+}
+```
+
+### toEither
+
+Turn a `Maybe` into `Either`. If we call it `Nothing` it takes the default value as a reason for `Left`:
+
+```ts
+const either1 = Just("hello world").toEither(); // Right("hello world")
+const either2 = Nothing().toEither("error"); // Left("error")
+```

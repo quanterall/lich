@@ -13,26 +13,29 @@ The `Either` type export couple of useful function, let's examine what they are 
 - [otherwise](#otherwise)
 - [onRight](#onright)
 - [onLeft](#onleft)
+- [fromRight](#fromright)
+- [fromLeft](#fromleft)
 - [isRight](#isright)
 - [isLeft](#isleft)
+- [toMaybe](#tomaybe)
 
 ### map
 
 `map` is a function that takes another `mapping` function that will be applied to our `Either` only if the value inside is a `Right` (this means that we know that we are transforming our value only when there is actually a value inside). If the value inside our `Either` is `Left`, nothing will change, we'll still have our `Left` as the value.
 
 ```ts
-const right = Right("hello world");
-right.map((v) => v + "!"); // Right("hello world!")
+const either1 = Right("hello world");
+either1.map((v) => v + "!"); // Right("hello world!")
 
-const left = Left("string is empty");
-left.map((v) => v + "!"); // Left("string is empty")
+const either2 = Left("string is empty");
+either2.map((v) => v + "!"); // Left("string is empty")
 ```
 
 And you can call as much of these `map` function as you like:
 
 ```ts
-const right = Right("hello world");
-right
+const either = Right("hello world");
+either
   .map((v) => v + "!") // Right("hello world!")
   .map((v) => v.charAt(0).toUpperCase() + v.slice(1)); // Right("Hello world!")
 ```
@@ -40,8 +43,8 @@ right
 Another cool thing about map is that you can even change the type of the returned value:
 
 ```ts
-const right = Right("hello world");
-right.map((v) => v.length); // Right(11)
+const either = Right("hello world");
+either.map((v) => v.length); // Right(11)
 ```
 
 ### bind
@@ -51,14 +54,14 @@ right.map((v) => v.length); // Right(11)
 Lets see an example of this:
 
 ```ts
-const right = Right(" Hello World  ").bind(nonEmptyString); // Right("Hello World")
-const left = Right("   ").bind(nonEmptyString); // Left("string is empty)
+const either1 = Right(" Hello World  ").bind(nonEmptyString); // Right("Hello World")
+const either2 = Right("   ").bind(nonEmptyString); // Left("string is empty)
 
 // And of course you can chain these calls
-right.map((v) => v + " !"); // Right("Hello World!")
+either1.map((v) => v + " !"); // Right("Hello World!")
 
 // or at the same time
-const right = Right(" Hello World  ")
+const either3 = Right(" Hello World  ")
   .bind(nonEmptyString)
   .map((v) => v + " !"); // Right("Hello World!")
 
@@ -77,8 +80,8 @@ function safeTrim(s: string): Either<string, string> {
 Lets see this in action:
 
 ```ts
-const right = Right("Hello ").fold("Hello World", (v) => v + " World"); // "Hello World"
-const left = Left("some error..").fold("Hello World", (v) => v + " World"); // "some error.."
+const either1 = Right("Hello ").fold("Hello World", (v) => v + " World"); // "Hello World"
+const either2 = Left("some error..").fold("Hello World", (v) => v + " World"); // "some error.."
 ```
 
 _You cannot chain the `fold` function since it return a pure value and not an `Either`._
@@ -90,7 +93,7 @@ _You cannot chain the `fold` function since it return a pure value and not an `E
 Example:
 
 ```ts
-const right = await Right(1).mapAsync(myAsyncFunc); // Right(11)
+const either = await Right(1).mapAsync(myAsyncFunc); // Right(11)
 
 async function myAsyncFunc(v: number): Promise<number> {
   return new Promise((resolve) => resolve(v + 10));
@@ -104,7 +107,7 @@ async function myAsyncFunc(v: number): Promise<number> {
 Lets see:
 
 ```ts
-const right = await Right("hello world").bindAsync(myAsyncFunc); // Right(12)
+const either = await Right("hello world").bindAsync(myAsyncFunc); // Right(12)
 
 async function myAsyncFunc(s: string): Promise<Maybe<number>> {
   return new Promise<Maybe<number>>((resolve) => resolve(Right(v.length + 1)));
@@ -118,17 +121,17 @@ async function myAsyncFunc(s: string): Promise<Maybe<number>> {
 In action:
 
 ```ts
-const right = await Right("hello world").foldAsync(100, myAsyncFunc); // 12
+const either1 = await Right("hello world").foldAsync(100, myAsyncFunc); // 12
 
 async function myAsyncFunc(s: string): Promise<number> {
   return new Promise((resolve) => resolve(v.length + 1));
 }
 
-const right = await Right("hello").foldAsync("hello world", (v) => {
+const either2 = await Right("hello").foldAsync("hello world", (v) => {
   return new Promise((resolve) => resolve(v + "world"));
 }); // "hello world"
 
-const left = await Left("some error..").foldAsync("hello world", (v) => {
+const either3 = await Left("some error..").foldAsync("hello world", (v) => {
   return new Promise((resolve) => resolve(v + "world"));
 }); // "hello world"
 ```
@@ -151,7 +154,7 @@ const either2 = Left("error").or("hello world"); // "hello world"
 Let's see how to use it:
 
 ```ts
-const right = Right("hello")
+const either = Right("hello")
   .map((v) => v + " world")
   .onJust((v) => console.info(`We have a just with value: ${v}`)); // Right("hello world")
 ```
@@ -163,9 +166,27 @@ const right = Right("hello")
 Lets see:
 
 ```ts
-const right = Right("hello world")
+const either = Right("hello world")
   .bind((_v) => Left("some error.."))
   .onLeft((l) => console.error("Failed with error: " + l)); // Left("some error..")
+```
+
+### fromRight
+
+Returns the value of the `Right` side of the `Either`, if called on `Left` it will return the provided default value:
+
+```ts
+const either1 = Right("hello world").fromRight("hello"); // "hello world"
+const either2 = Left("error").fromRight("hello world"); // "hello world"
+```
+
+### fromLeft
+
+`fromLeft` is the opposite of `fromRight`:
+
+```ts
+const either1 = Left("error").fromLeft("hello world"); // "error"
+const either2 = Right("hello world").fromLeft("error"); // "error"
 ```
 
 ### isRight
@@ -175,20 +196,22 @@ const right = Right("hello world")
 Let's see how this goes:
 
 ```ts
-const right = Right("this is awesome");
-// right.value <-- if you try to access 'value' here typescript will complain
+const either = Right("this is awesome");
+// either.value <-- if you try to access 'value' here typescript will complain
 
-if (right.isRight()) {
-  const nice = right.value; // here it's fine
+if (either.isRight()) {
+  const nice = either.value; // here it's fine
 }
+```
 
-// it works the opposite way as well
+It works the opposite way as well
 
-const left = Left("some error..");
-// left.reason <-- if you try to access 'reason' here typescript will complain
+```ts
+const either = Left("some error..");
+// either.reason <-- if you try to access 'reason' here typescript will complain
 
-if (!left.isRight()) {
-  const myError = left.reason; // here it's fine
+if (!either.isRight()) {
+  const myError = either.reason; // here it's fine
 }
 ```
 
@@ -209,17 +232,30 @@ function rightOrThrow(either: Either<string, string>): string {
 `isLeft` is just the opposite of `isRight`
 
 ```ts
-const left = Left("some error..");
-// left.reason <-- if you try to access 'reason' here typescript will complain
+const either = Left("some error..");
+// either.reason <-- if you try to access 'reason' here typescript will complain
 
-if (left.isLeft()) {
-  const myError = left.reason; // here it's fine
+if (either.isLeft()) {
+  const myError = either.reason; // here it's fine
 }
+```
 
-const right = Right("this is awesome");
-// right.value <-- if you try to access 'value' here typescript will complain
+or
 
-if (!right.isLeft()) {
-  const nice = right.value; // here it's fine
+```ts
+const either = Right("this is awesome");
+// either.value <-- if you try to access 'value' here typescript will complain
+
+if (!either.isLeft()) {
+  const nice = either.value; // here it's fine
 }
+```
+
+### toMaybe
+
+Turn an `Either` into `Maybe`:
+
+```ts
+const maybe1 = Right("hello world").toMaybe(); // Just("hello world")
+const maybe2 = Left("error").toMaybe(); // Nothing()
 ```
