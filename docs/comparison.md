@@ -9,6 +9,7 @@ Let's say that your program has an input of a string. That string should be a JS
 There are numbers of ways we could go about this problem in Typescript:
 
 - [Throw + try/catch](#throw+try/catch)
+- [Return data or null](#return-data-or-null)
 - [Create CustomError type and return data ot CustomError](#create-customerror-type)
 - [Using lich](#using-lich)
 
@@ -17,13 +18,15 @@ There are numbers of ways we could go about this problem in Typescript:
 Here is how we may go about it using `throw + try/catch`:
 
 ```ts
-export function maybeParsePost(input: string): Post | null {
+export function maybeParsePost(input: string): Post {
   try {
     const res = JSON.parse(input);
     return validatePost(res);
   } catch (error) {
-    if (error instanceof Error) console.error(`'maybeParsePost' Failed with: ${error}`);
-    return null;
+    if (!error instanceof Error) throw new Error(error);
+
+    console.error(`'maybeParsePost' Failed with: ${error.message}`);
+    throw new Error(error.message);
   }
 }
 
@@ -63,6 +66,67 @@ function validatePost(json: Record<string, unknown>): Post {
 The issue with this approach is the `try/catch` nesting that we end up with, if we want to handle the various errors that might happen from each 'throwable' function we call, especially when the input of one 'throwable' function depends on another 'throwable' function.
 Additionally, you might forget that your function can actually throw, and call it without `try/catch`, or expect that somewhere on an upper level, some caller function will catch it. And now we are starting to make assumptions, which is already bad.
 This means that if you don't want to handle the `try/catch`, you have to verify that some other upper function will catch your throw. (_This doesn't scale. At some point it will be too hard to follow._)
+
+---
+
+## Return data or null
+
+Here is how we may go about it if we return either `Post` or `null`:
+
+```ts
+export function maybeParsePost(input: string): Post | null {
+  return validatePost(JSON.parse(input));
+}
+
+type Post = {
+  title: string;
+  subtitle: string;
+  likes: number;
+};
+
+function parseJson(s: string): Record<string, unknown> | null {
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    console.error(`Failed to parse json: ${JSON.stringify(e)}`);
+    return null;
+  }
+}
+
+function validatePost(json: Record<string, unknown> | null): Post | null {
+  if (json === null) return null;
+
+  const fields = ["title", "subtitle", "likes"];
+  for (let field of fields) {
+    if (!Object.hasOwnProperty.call(json, field)) {
+      console.error(`Missing field '${field}': ${JSON.stringify(json)}`);
+      return null;
+    }
+  }
+
+  // We need to explicitly type out these, so that we can use them as these types
+  if (typeof json.title !== "string") {
+    console.error(`Failed to parse title as string: ${JSON.stringify(json)}`);
+    return null;
+  }
+  if (typeof json.subtitle !== "string") {
+    console.error(`Failed to parse subtitle as string: ${JSON.stringify(json)}`);
+    return null;
+  }
+  if (typeof json.likes !== "number") {
+    console.error(`Failed to parse likes as number: ${JSON.stringify(json)}`);
+    return null;
+  }
+
+  return {
+    title: json.title,
+    subtitle: json.subtitle,
+    likes: json.likes,
+  };
+}
+```
+
+The issue here is that we need to do our logging in the function itself, because if it fails, we don't get a response with the reason. So if we wish to log the error it needs to happen inside the function.
 
 ---
 
