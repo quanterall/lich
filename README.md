@@ -106,4 +106,4 @@ A more deep comparison against other error handling practices could be found **[
   - [fromLeft](docs/either.md/#fromleft)
   - [isRight](docs/either.md/#isright)
   - [isLeft](docs/either.md/#isleft)
-  - [toMaybe](docs/maybe.md/#tomaybe)
+  - [toMaybe](docs/either.md/#tomaybe)
