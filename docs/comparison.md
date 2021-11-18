@@ -2,9 +2,9 @@
 
 Let's say that your program has an input of a string. That string should be a JSON and should have specific keys and type of values. If you want to make sure that the input string is what it should be, you should:
 
-- **Step 1.**: Validate that the string is an actual JSON
-- **Step 2.**: Validate that all the keys are present and have the correct type
-- Additionally, we would like do something specific if the validation fails on _Step 1._ or _Step 2._
+- **Step 1.**: Validate that the string is an actual JSON.
+- **Step 2.**: Validate that all the keys are present and are the correct type.
+- Additionally, you want to log an error if any of the steps fails.
 
 There are numbers of ways we could go about this problem in Typescript:
 
