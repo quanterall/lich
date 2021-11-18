@@ -1,4 +1,13 @@
-import { fromTry, Just, justs, Maybe, Nothing, nullableToMaybe, sequenceMaybe } from "../src/maybe";
+import {
+  fromPromise,
+  fromTry,
+  Just,
+  justs,
+  Maybe,
+  Nothing,
+  nullableToMaybe,
+  sequenceMaybe,
+} from "../src/maybe";
 
 describe("'isJust'", () => {
   test("should return 'true' when called on 'Just'", () => {
@@ -327,6 +336,25 @@ describe("'fromTry'", () => {
     const p = 1;
     const maybe = fromTry(() => p.toPrecision(300));
 
+    expect(maybe.isJust()).toBe(false);
+    expect(maybe.isNothing()).toBe(true);
+  });
+});
+
+describe("'fromPromise'", () => {
+  test("should return a 'Just' if Promise resolves", async () => {
+    const promise = new Promise<string>((resolve, _reject) => resolve("hello world"));
+
+    const maybe = await fromPromise(promise);
+    expect(maybe.isJust()).toBe(true);
+    expect(maybe.isNothing()).toBe(false);
+    maybe.onJust((j) => expect(j).toBe("hello world"));
+  });
+
+  test("should return a 'Nothing' if Promise rejects", async () => {
+    const promise = new Promise<string>((_resolve, reject) => reject("error"));
+
+    const maybe = await fromPromise<string>(promise);
     expect(maybe.isJust()).toBe(false);
     expect(maybe.isNothing()).toBe(true);
   });

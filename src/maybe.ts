@@ -285,3 +285,12 @@ export function fromTry<J>(f: () => J): Maybe<J> {
     return Nothing();
   }
 }
+
+/**
+ * Takes a `Promise` and wraps the result in an `Maybe`.
+ * @param p A `Promise`
+ * @returns A `Just` with the result on promise resolve or `Nothing` on promise reject
+ */
+export async function fromPromise<R>(p: Promise<R>): Promise<Maybe<R>> {
+  return await p.then<Maybe<R>>((j) => Just(j)).catch((_e) => Nothing());
+}

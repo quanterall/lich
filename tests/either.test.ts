@@ -9,6 +9,7 @@ import {
   sequenceEither,
   rightsOr,
   fromTry,
+  fromPromise,
 } from "../src/either";
 
 describe("'isRight", () => {
@@ -410,7 +411,7 @@ describe("'nullableToEither", () => {
 describe("'fromTry'", () => {
   test("should return a 'Right' if no exception is thrown", () => {
     const p = 1;
-    const either = fromTry(() => p.toPrecision(3), "some error");
+    const either = fromTry(() => p.toPrecision(3), "error");
 
     expect(either.isRight()).toBe(true);
     expect(either.isLeft()).toBe(false);
@@ -419,10 +420,30 @@ describe("'fromTry'", () => {
 
   test("should return a 'Left' with the default value if an exception is thrown", () => {
     const p = 1;
-    const either = fromTry(() => p.toPrecision(300), "some error");
+    const either = fromTry(() => p.toPrecision(300), "error");
 
     expect(either.isRight()).toBe(false);
     expect(either.isLeft()).toBe(true);
-    either.onLeft((l) => expect(l).toBe("some error"));
+    either.onLeft((l) => expect(l).toBe("error"));
+  });
+});
+
+describe("'fromPromise'", () => {
+  test("should return a 'Right' if Promise resolves", async () => {
+    const promise = new Promise<string>((resolve, _reject) => resolve("hello world"));
+
+    const either = await fromPromise(promise);
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe("hello world"));
+  });
+
+  test("should return a 'Left' if Promise rejects", async () => {
+    const promise = new Promise<string>((_resolve, reject) => reject("error"));
+
+    const either = await fromPromise<string, string>(promise);
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("error"));
   });
 });

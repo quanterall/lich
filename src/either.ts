@@ -382,3 +382,12 @@ export function fromTry<L, R>(f: () => R, onCatch: L): Either<L, R> {
     return Left(onCatch);
   }
 }
+
+/**
+ * Takes a `Promise` and wraps the result in an `Either`.
+ * @param p A `Promise`
+ * @returns A `Right` with the result on promise resolve or `Left` on promise reject
+ */
+export async function fromPromise<L, R>(p: Promise<R>): Promise<Either<L, R>> {
+  return await p.then<Either<L, R>>((r) => Right(r)).catch((l) => Left(l));
+}
