@@ -1,15 +1,16 @@
 ## Error handling
 
-There are numbers of ways to deal with errors in Typescript. Some of them include:
-
-- [throw + try/catch](#throw+try/catch)
-- [create CustomError type and return data ot CustomError](#create-customerror-type)
-
 Let's say that your program has an input of a string. That string should be a JSON and should have specific keys and type of values. If you want to make sure that the input string is what it should be, you should:
 
 - **Step 1.**: Validate that the string is an actual JSON
 - **Step 2.**: Validate that all the keys are present and have the correct type
 - Additionally, we would like do something specific if the validation fails on _Step 1._ or _Step 2._
+
+There are numbers of ways we could go about this problem in Typescript:
+
+- [throw + try/catch](#throw+try/catch)
+- [create CustomError type and return data ot CustomError](#create-customerror-type)
+- [using lich](#using-lich)
 
 ## Throw + try/catch
 
@@ -141,6 +142,8 @@ Now when we call our functions, the compiler will not allow us to expect that it
 But it's still not the best, because we still have this `if` nesting in order to work with the errors.
 
 ---
+
+## Using lich
 
 Now let's see how `lich` fixes these issues:
 
