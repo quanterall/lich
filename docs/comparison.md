@@ -267,11 +267,13 @@ Let's examine what is happening
 ```ts
 export function maybeParsePost(input: string): Either<string, Post> {
   return (
-    maybeJson(input) // first we call `maybeJson` which will return Either<string, Record<string, unknown>>
-      // `bind` lets us call a function over an `Either` if it is a `Right`, so if `maybeJson` returns a `Right`, this bind will be called
-      // and the function validatePost will get the Record<string, unknown> as an input value
-      .bind(validatePost) // a more explicit way to write this would be `.bind((json) => validatePost(json))`
-      // Lastly, if we ever get a `Left` of either of the upper calls, this function will be called, so we can `console.error` the failure
+    maybeJson(input) // First we call `maybeJson` which will return Either<string, Record<string, unknown>>
+      // `bind` lets us call a function over an `Either` if it is a `Right`,
+      // so if `maybeJson` returns a `Right`, this bind will be called
+      // and the function validatePost will get the Record<string, unknown> as an input value.
+      .bind(validatePost) // A more explicit way to write this would be `.bind((json) => validatePost(json))`.
+      // Lastly, if we ever get a `Left` of either of the upper calls, this function will be called,
+      // so we can `console.error` the failure.
       .onLeft((l) => console.error(`'maybeParsePost' Failed with: ${l}`))
   );
 }
