@@ -133,6 +133,17 @@ const left = await Left("some error..").foldAsync("hello world", (v) => {
 }); // "hello world"
 ```
 
+### otherwise
+
+`otherwise` takes a default value and if it's called on `Left` it will return that default value. If it's a `Right` it will return the value of the `Right`.
+
+Example here:
+
+```ts
+const either1 = Right("hello").or("hello world"); // "hello"
+const either2 = Left("error").or("hello world"); // "hello world"
+```
+
 ### onRight
 
 `onRight` is a function that takes a callback function that will execute only if the `Either` is a `Right` and it will return the `Right` as it was. If the `Either` is a `Left`, this function will not be called and it will still return you the `Left`.
