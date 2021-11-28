@@ -91,6 +91,29 @@ describe("'map'", () => {
   });
 });
 
+describe("'mapLeft'", () => {
+  test("should apply a given function over a value inside a 'Left'", () => {
+    const either = Left("some error").mapLeft((l) => `The error is: '${l}'`);
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("The error is: 'some error'"));
+  });
+
+  test("should not be called on 'Right'", () => {
+    let p = 0;
+    const either = Right("hello world").mapLeft((l) => {
+      p = 10;
+      return l + " world";
+    });
+
+    expect(p).toBe(0);
+    expect(either.isRight()).toBe(true);
+    expect(either.isLeft()).toBe(false);
+    either.onRight((r) => expect(r).toBe("hello world"));
+  });
+});
+
 describe("'bind'", () => {
   test("should apply a given function over a value inside a 'Right'", () => {
     const either = Right("hello").bind((r) => Right(r + " world"));
@@ -124,21 +147,43 @@ describe("'bind'", () => {
 
 describe("'fold'", () => {
   test("should apply a given function over a value on a 'Right' and return the result", () => {
-    const value = Right("hello world").fold(100, (r) => r.length);
+    const value = Right<string, string>("hello world").fold(
+      (l) => l.length,
+      (r) => r.length,
+    );
     expect(value).toBe(11);
   });
 
   test("should return the default value when called on 'Left'", () => {
-    const value = Left<string, string>("error").fold(100, (r) => r.length);
-    expect(value).toBe(100);
+    const value = Left<string, string>("error").fold(
+      (l) => l.length,
+      (r) => r.length,
+    );
+    expect(value).toBe(5);
   });
 
-  test("should NOT execute the given function and return the default value when called on 'Left'", () => {
+  test("should NOT execute 'onLeft' function when called on 'Right'", () => {
     let p = 0;
-    Left<string, string>("error").fold(100, (r) => {
-      p = 10;
-      return 1000;
-    });
+    Right<string, string>("hello world").fold(
+      (_l) => {
+        p = 10;
+        return 1000;
+      },
+      (r) => r.length,
+    );
+
+    expect(p).toBe(0);
+  });
+
+  test("should NOT execute 'onRight' function when called on 'Left'", () => {
+    let p = 0;
+    Left<string, string>("error").fold(
+      (l) => l.length,
+      (_r) => {
+        p = 10;
+        return 1000;
+      },
+    );
 
     expect(p).toBe(0);
   });
@@ -218,19 +263,32 @@ describe("'foldAsync'", () => {
   const asyncFunc = (r: string) => new Promise((resolve) => resolve(r.length));
 
   test("should apply a given function over a value on a 'Right' and return the result", async () => {
-    const value = await Right("hello world").foldAsync(100, asyncFunc);
+    const value = await Right<string, string>("hello world").foldAsync(asyncFunc, asyncFunc);
     expect(value).toBe(11);
   });
 
   test("should return the default value when called on 'Left'", async () => {
-    const value = await Left<string, string>("error").foldAsync(100, asyncFunc);
-    expect(value).toBe(100);
+    const value = await Left<string, string>("error").foldAsync(asyncFunc, asyncFunc);
+    expect(value).toBe(5);
   });
 
-  test("should NOT call the given function when called on 'Left'", async () => {
+  test("should NOT call 'onLeft' function when called on 'Right'", async () => {
     let p = 0;
-    await Left("error").foldAsync(
-      100,
+    await Right<string, string>("hello world").foldAsync(
+      (_l) =>
+        new Promise((resolve) => {
+          p = 10;
+          resolve(101);
+        }),
+      asyncFunc,
+    );
+    expect(p).toBe(0);
+  });
+
+  test("should NOT call 'onRight' function when called on 'Left'", async () => {
+    let p = 0;
+    await Left<string, string>("error").foldAsync(
+      asyncFunc,
       (_r) =>
         new Promise((resolve) => {
           p = 10;

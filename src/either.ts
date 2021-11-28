@@ -24,6 +24,18 @@ interface EitherUtilities<L, R> {
    */
   map<T>(f: (r: R) => T): Either<L, T>;
   /**
+   * Maps over a `Either` value. If the value is a `Right`, it will apply the given
+   * function to the value. Otherwise, it will return the `Left` that is already there.
+   * @param f Mapping function
+   * @example
+   * const left = Left("string is empty")
+   * left.map((e) => `this is critical error: '${e}'`) // Left("this is critical error: 'string is empty'")
+   *
+   * const right = Right("hello world")
+   * right.mapLeft((e) => `this is critical error: '${e}'`) // Right("hello world")
+   */
+  mapLeft<T>(f: (l: L) => T): Either<T, R>;
+  /**
    * Takes the value of the `Either`, if it is `Right` it will apply the given function
    * over it, returning a new `Either` of type `<T>`. Otherwise it will return the
    * `Left` that is already there.
@@ -47,11 +59,10 @@ interface EitherUtilities<L, R> {
    */
   bind<T>(f: (r: R) => Either<L, T>): Either<L, T>;
   /**
-   * Takes the value of the `Either`, if it is `Right` it will apply the given function
-   * over it and return the result, if it is `Left` it will return the supplied
-   * default value.
-   * @param onLeft Default value if the value of `Either` is `Left`
-   * @param f Function
+   * Takes the value of the `Either`, and applies the appropriate function
+   * depending on the type of the `Either`.
+   * @param onLeft Function called if `Either` is `Left`
+   * @param onRight Function called if `Either` is `Right`
    * @example
    * const right = Right("hello world")
    * right.fold(100, (value) => value.length) // 11
@@ -59,7 +70,7 @@ interface EitherUtilities<L, R> {
    * const left = Left("string is empty")
    * left.fold(11, (value) => value.length) // 11
    */
-  fold<T>(onLeft: T, f: (r: R) => T): T;
+  fold<T>(onLeft: (l: L) => T, onRight: (r: R) => T): T;
   /**
    * Maps over a `Either` value. If the value is a `Right`, it will apply the given
    * async function to the value. Otherwise, it will return the `Left`
@@ -80,7 +91,7 @@ interface EitherUtilities<L, R> {
    * @param f Mapping async function
    * @param onNothing Default value if the value of `Either` is `Left`
    */
-  foldAsync<T>(defaultR: T, f: (r: R) => Promise<T>): Promise<T>;
+  foldAsync<T>(onLeft: (l: L) => Promise<T>, onRight: (r: R) => Promise<T>): Promise<T>;
   /**
    * If the value of the `Either` is `Left` it will return the
    * supplied default value, if it is `Right` it will return it's value.
@@ -201,12 +212,13 @@ export function Right<L, R>(r: R): Either<L, R> {
     type: "Right",
     value: r,
     map: (f) => Right(f(r)),
+    mapLeft: (_f) => Right(r),
     bind: (f) => f(r),
-    fold: (_d, f) => f(r),
+    fold: (_, f) => f(r),
     mapAsync: async (f) => Right(await f(r)),
     bindAsync: async (f) => await f(r),
-    foldAsync: async (_d, f) => await f(r),
-    otherwise: (_d) => r,
+    foldAsync: async (_, f) => await f(r),
+    otherwise: (_) => r,
     onRight: (f) => {
       f(r);
       return Right(r);
@@ -229,12 +241,13 @@ export function Left<L, R>(l: L): Either<L, R> {
   return {
     type: "Left",
     reason: l,
-    map: (_f) => Left(l),
-    bind: (_f) => Left(l),
-    fold: (d, _f) => d,
-    mapAsync: async (_f) => Left(l),
-    bindAsync: async (_f) => Left(l),
-    foldAsync: async (d, _f) => d,
+    map: (_) => Left(l),
+    mapLeft: (f) => Left(f(l)),
+    bind: (_) => Left(l),
+    fold: (f, _) => f(l),
+    mapAsync: async (_) => Left(l),
+    bindAsync: async (_) => Left(l),
+    foldAsync: async (f, _) => await f(l),
     otherwise: (d) => d,
     onRight: () => Left(l),
     onLeft: (f) => {
@@ -242,7 +255,7 @@ export function Left<L, R>(l: L): Either<L, R> {
       return Left(l);
     },
     fromRight: (d) => d,
-    fromLeft: (_d) => l,
+    fromLeft: (_) => l,
     toMaybe: () => Nothing(),
     isRight: () => false,
     isLeft: () => true,
@@ -264,7 +277,14 @@ export function Left<L, R>(l: L): Either<L, R> {
  * rights(eithers2) // []
  */
 export function rights<L, R>(es: Either<L, R>[]): R[] {
-  return es.reduce((acc, e) => e.fold(acc, (r) => [...acc, r]), [] as R[]);
+  return es.reduce(
+    (acc, e) =>
+      e.fold(
+        () => acc,
+        (r) => [...acc, r],
+      ),
+    [] as R[],
+  );
 }
 
 /**

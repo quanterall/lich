@@ -5,11 +5,12 @@ The `Either` type represents values with two possibilities: a value of type `Eit
 The `Either` type export couple of useful function, let's examine what they are and how to use them in practice:
 
 - [map](#map)
-- [mapAsync](#mapasync)
 - [bind](#bind)
-- [bindAsync](#bindasync)
 - [fold](#fold)
+- [mapAsync](#mapasync)
+- [bindAsync](#bindasync)
 - [foldAsync](#foldasync)
+- [mapLeft](#mapLeft)
 - [otherwise](#otherwise)
 - [onRight](#onright)
 - [onLeft](#onleft)
@@ -75,13 +76,19 @@ function safeTrim(s: string): Either<string, string> {
 
 ### fold
 
-`fold` takes a default value and a function. If the `Either` on which we call the fold is a `Left` it will return the default value, if it's a `Right` it will return the result of the function applied to the value inside the `Right`.
+`fold` takes two function, each being executed for it's type. Executes either of them and returns a result. If the `Either` on which we call the fold is a `Left` it call the provided `onLeft` function, if it's a `Right` it will call the provided `onRight` function.
 
 Lets see this in action:
 
 ```ts
-const either1 = Right("Hello ").fold("Hello World", (v) => v + " World"); // "Hello World"
-const either2 = Left("some error..").fold("Hello World", (v) => v + " World"); // "some error.."
+const either1 = Right("Hello ").fold(
+  (l) => "ERROR: " + l,
+  (v) => v + " World",
+); // "Hello World"
+const either2 = Left("some error..").fold(
+  (l) => "ERROR: " + l,
+  (v) => v + " World",
+); // "ERROR: some error.."
 ```
 
 _You cannot chain the `fold` function since it return a pure value and not an `Either`._
@@ -121,19 +128,26 @@ async function myAsyncFunc(s: string): Promise<Maybe<number>> {
 In action:
 
 ```ts
-const either1 = await Right("hello world").foldAsync(100, myAsyncFunc); // 12
+const either1 = await Right("hello world").foldAsync(myAsyncFunc, myAsyncFunc); // 12
+
+const either2 = await Right("hello").foldAsync(myAsyncFunc, (v) => {
+  return new Promise((resolve) => resolve(v + " world"));
+}); // "hello world"
+
+const either3 = await Left("error").foldAsync(myAsyncFunc, myAsyncFunc); // 5
 
 async function myAsyncFunc(s: string): Promise<number> {
   return new Promise((resolve) => resolve(v.length + 1));
 }
+```
 
-const either2 = await Right("hello").foldAsync("hello world", (v) => {
-  return new Promise((resolve) => resolve(v + "world"));
-}); // "hello world"
+### mapLeft
 
-const either3 = await Left("some error..").foldAsync("hello world", (v) => {
-  return new Promise((resolve) => resolve(v + "world"));
-}); // "hello world"
+`mapLeft` works the same way as `map` with the difference that it will be called only on the `Left` type of an `Either`.
+
+```ts
+const either1 = Right("hello world").mapLeft((l) => `ERROR: '${l}'`); // Right("hello world")
+const either2 = Left("some error").mapLeft((l) => `ERROR: '${l}'`); // Left("ERROR: 'some error'")
 ```
 
 ### otherwise
