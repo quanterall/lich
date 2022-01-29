@@ -94,6 +94,8 @@ A more deep comparison against other error handling practices could be found **[
 ## Documentation
 
 - [Maybe](docs/maybe.md/#maybe)
+  - [Just](docs/maybe.md/#just)
+  - [Nothing](docs/maybe.md/#nothing)
   - [map](docs/maybe.md/#map)
   - [bind](docs/maybe.md/#bind)
   - [fold](docs/maybe.md/#fold)
@@ -107,6 +109,8 @@ A more deep comparison against other error handling practices could be found **[
   - [isNothing](docs/maybe.md/#isnothing)
   - [toEither](docs/maybe.md/#toeither)
 - [Either](docs/either.md/#either)
+  - [Right](docs/either.md/#right)
+  - [Left](docs/either.md/#left)
   - [map](docs/either.md/#map)
   - [bind](docs/either.md/#bind)
   - [fold](docs/either.md/#fold)
