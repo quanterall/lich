@@ -4,6 +4,7 @@
   "author": "Georgi Spasov",
   "version": "1.0.0",
   "license": "BSD-2-Clause",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "prepublish": "yarn build && yarn test",
     "prebuild": "yarn format && yarn lint",
