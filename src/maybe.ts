@@ -5,7 +5,8 @@ import { Either, Left, Right } from "./either";
  * either contains a value of type <J> (represented as `Just<J>`),
  * or it is empty (represented as `Nothing`). Using `Maybe` is a good way
  * to deal with errors or exceptional cases without resorting to drastic measures such as error.
- * The `Maybe` type is also a `monad`. It is a simple kind of error `monad`, where all errors are represented by `Nothing`.
+ * The `Maybe` type is also a `monad`. It is a simple kind of error `monad`,
+ * where all errors are represented by `Nothing`.
  * A richer error `monad` can be built using the `Either` type.
  */
 export type Maybe<J> = Just<J> | Nothing<J>;
@@ -15,6 +16,7 @@ interface MaybeUtilities<J> {
    * Maps over a `Maybe` value. If the value is a `Just`, it will apply the given
    * function to the value. Otherwise, it will return the `Nothing`
    * that is already there.
+   *
    * @param f Mapping function
    * @example
    * const just = Just("hello").map((j) => j.length) // returns Just(5)
@@ -28,6 +30,7 @@ interface MaybeUtilities<J> {
    * Takes the value of the `Maybe`, if it is `Just` it will apply the given function
    * over it, returning a new `Maybe` of type `<T>`. Otherwise it will return the
    * `Nothing` that is already there.
+   *
    * @param f Transformer function
    * @example
    * const just = Just(" hello ").bind(nonEmptyString) // Just("hello")
@@ -46,6 +49,7 @@ interface MaybeUtilities<J> {
    * Takes the value of the `Maybe`, if it is `Just` it will apply the given function
    * over it and return the result, if it is `Nothing` it will return the supplied
    * default value.
+   *
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    * @param f Function
    * @example
@@ -60,6 +64,7 @@ interface MaybeUtilities<J> {
    * Maps over a `Maybe` value. If the value is a `Just`, it will apply the given
    * async function to the value. Otherwise, it will return the `Nothing`
    * that is already there.
+   *
    * @param f Mapping async function
    */
   mapAsync<T>(f: (j: J) => Promise<T>): Promise<Maybe<T>>;
@@ -67,12 +72,14 @@ interface MaybeUtilities<J> {
    * Takes the value of the `Maybe`, if it is `Just` it will apply the given async
    * function over it, returning a new `Maybe` of type `<T>`.
    * Otherwise it will return the `Nothing` that is already there.
+   *
    * @param f Transformer async function
    */
   bindAsync<T>(f: (j: J) => Promise<Maybe<T>>): Promise<Maybe<T>>;
   /**
    * Takes the value of the `Maybe`, if it is `Just` it will apply the given async
    * function over it, if it is `Nothing` it will return the supplied default value.
+   *
    * @param f Mapping async function
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    */
@@ -80,6 +87,7 @@ interface MaybeUtilities<J> {
   /**
    * If the value of the `Maybe` is `Nothing` it will return the
    * supplied default value, if it is `Just` it will return it's value.
+   *
    * @param onNothing Default value if the value of `Maybe` is `Nothing`
    * @example
    * const nothing = Nothing()
@@ -90,30 +98,35 @@ interface MaybeUtilities<J> {
    */
   otherwise(onNothing: J): J;
   /**
-   * Executes a callback function if the value of the `Maybe` is `Just` and returns the `Maybe`
+   * Executes a callback function if the value of the `Maybe` is `Just` and returns the `Maybe`.
+   *
    * @param f Callback function
    * @example
    * const just = Just(10)
    * just.onJust((value) => console.info(value)) // This will execute successfully.
    *
    * const nothing = Nothing()
-   * nothing.onJust((value) => console.info(value)) // This `console.info` will not execute, because we have a `Nothing`.
+   * nothing.onJust((value) => console.info(value)) // This `console.info` will not execute,
+   * because we have a `Nothing`.
    */
   onJust(f: (j: J) => void): Maybe<J>;
   /**
-   * Executes a callback function if the value of the `Maybe` is `Nothing` and returns the `Maybe`
+   * Executes a callback function if the value of the `Maybe` is `Nothing` and returns the `Maybe`.
+   *
    * @param f Callback function
    * @example
    * const nothing = Nothing()
    * nothing.onNothing((reason) => console.error(reason)) // This will execute successfully.
    *
    * const just = Just(10)
-   * just.onNothing((reason) => console.error(reason)) // This `console.error` will not execute, because we have a `Just`.
+   * just.onNothing((reason) => console.error(reason)) // This `console.error` will not execute,
+   * because we have a `Just`.
    */
   onNothing(f: () => void): Maybe<J>;
   /**
    * Checks if the `Maybe` is `Just`. If this checks to true, typescript will allow to access
    * the `value` key of the `Just`.
+   *
    * @example
    * const just = Just(10)
    * // just.value <-- typescript will complain if you try to access `value` here.
@@ -132,6 +145,7 @@ interface MaybeUtilities<J> {
   /**
    * Checks if the `Maybe` is `Nothing`. If this checks to false, typescript will allow to access
    * the `value` key of the `Just`.
+   *
    * @example
    * const nothing = Nothing()
    * if (nothing.isNothing()) {
@@ -151,7 +165,8 @@ interface MaybeUtilities<J> {
    * Takes a `Maybe` and with given default `Left` value, it will either
    * return `Right` if the `Maybe` was `Just`
    * or it will return `Left` with the provided default value
-   * if the `Maybe` was `Nothing`
+   * if the `Maybe` was `Nothing`.
+   *
    * @param onNothing Default error value
    * @example
    * const either = Just(10).toEither("error") // Right(10)
@@ -178,6 +193,7 @@ export function Just<J>(j: J): Maybe<J> {
     foldAsync: async (_t, f) => await f(j),
     onJust: (f) => {
       f(j);
+
       return Just(j);
     },
     onNothing: (_f) => Just(j),
@@ -198,12 +214,13 @@ export function Nothing<J>(): Maybe<J> {
     map: (_f) => Nothing(),
     bind: (_f) => Nothing(),
     fold: (j, _f) => j,
-    mapAsync: async (_f) => Nothing(),
-    bindAsync: async (_f) => Nothing(),
-    foldAsync: async (j, _f) => j,
+    mapAsync: async (_f) => Promise.resolve(Nothing()),
+    bindAsync: async (_f) => Promise.resolve(Nothing()),
+    foldAsync: async (j, _f) => Promise.resolve(j),
     onJust: (_f) => Nothing(),
     onNothing: (f) => {
       f();
+
       return Nothing();
     },
     otherwise: (j) => j,
@@ -215,6 +232,7 @@ export function Nothing<J>(): Maybe<J> {
 
 /**
  * Take a list of `Maybe`s and return all the `Just`s that are inside.
+ *
  * @param ms A list of `Maybe`s
  * @returns A list with the values of the `Just`s
  * @example
@@ -232,7 +250,8 @@ export function justs<J>(ms: Maybe<J>[]): J[] {
 }
 
 /**
- * Take a list of `Maybe`s and either return all `Just`s or a `Nothing`
+ * Take a list of `Maybe`s and either return all `Just`s or a `Nothing`.
+ *
  * @param ms A list of `Maybe`s
  * @returns `Maybe` with a list of all `Just` values
  * @example
@@ -251,13 +270,15 @@ export function sequenceMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
     if (m.isNothing()) return Nothing();
     js.push(m.value);
   }
+
   return Just(js);
 }
 
 /**
  * Takes a nullable value, if the value is not equal ot `null` or `undefined`
  * it returns `Just` with the value inside
- * otherwise it returns `Nothing`
+ * otherwise it returns `Nothing`.
+ *
  * @param j A nullable value, i.e. _value that can hold `null` or `undefined` or both_
  * @returns `Maybe` of the given value
  * @example
@@ -269,12 +290,14 @@ export function sequenceMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
  */
 export function nullableToMaybe<J>(j: J): Maybe<J> {
   if (j === null || j === undefined) return Nothing();
+
   return Just(j);
 }
 
 /**
  * Takes a `throwable` function and executes it. If it throws return `Nothing`,
  * otherwise return `Just` with the result.
+ *
  * @param f `throwable` function
  * @returns Maybe of the result
  */
@@ -288,6 +311,7 @@ export function fromTry<J>(f: () => J): Maybe<J> {
 
 /**
  * Takes a `Promise` and wraps the result in an `Maybe`.
+ *
  * @param p A `Promise`
  * @returns A `Just` with the result on promise resolve or `Nothing` on promise reject
  */
