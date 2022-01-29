@@ -1,5 +1,5 @@
 {
-  "name": "@quantereall/lich",
+  "name": "@quanterall/lich",
   "description": "Lich is a library for chaining computations in TypeScript. It's heavily inspired by the monadic structures in Haskell. In particular Maybe and Either.",
   "author": "Georgi Spasov",
   "version": "1.0.0",
