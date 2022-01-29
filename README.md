@@ -8,13 +8,13 @@ The goal of lich is to improve flow, safety and reliability of your code.
 Via npm:
 
 ```
-$ npm install lich
+$ npm install @quanterall/lich
 ```
 
 Via yarn:
 
 ```
-$ yarn add lich
+$ yarn add @quanterall/lich
 ```
 
 ## How does it work?
