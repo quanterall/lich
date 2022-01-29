@@ -4,6 +4,8 @@ The `Either` type represents values with two possibilities: a value of type `Eit
 
 The `Either` type export couple of useful function, let's examine what they are and how to use them in practice:
 
+- [Right](#right)
+- [Left](#left)
 - [map](#map)
 - [bind](#bind)
 - [fold](#fold)
@@ -20,11 +22,34 @@ The `Either` type export couple of useful function, let's examine what they are 
 - [isLeft](#isleft)
 - [toMaybe](#tomaybe)
 
+### Right
+
+`Right` is a function that returns an `Either` with the type `Right`. It will hold the value you pass to it.
+
+```ts
+import { Either, Right } from "lich";
+
+const eitherHello: Either<string> = Right("hello world");
+```
+
+### Left
+
+`Left` is a function that returns an `Either` with a type `Left`. It will hold the `error` value you pass to it.
+This error probably should indicate what went wrong.
+
+```ts
+import { Either, Left } from "lich";
+
+const eitherHello: Either<string> = Left("Values hasn't been defined");
+```
+
 ### map
 
 `map` is a function that takes another `mapping` function that will be applied to our `Either` only if the value inside is a `Right` (this means that we know that we are transforming our value only when there is actually a value inside). If the value inside our `Either` is `Left`, nothing will change, we'll still have our `Left` as the value.
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = Right("hello world");
 either1.map((v) => v + "!"); // Right("hello world!")
 
@@ -35,6 +60,8 @@ either2.map((v) => v + "!"); // Left("string is empty")
 And you can call as much of these `map` function as you like:
 
 ```ts
+import { Right } from "lich";
+
 const either = Right("hello world");
 either
   .map((v) => v + "!") // Right("hello world!")
@@ -44,6 +71,8 @@ either
 Another cool thing about map is that you can even change the type of the returned value:
 
 ```ts
+import { Right } from "lich";
+
 const either = Right("hello world");
 either.map((v) => v.length); // Right(11)
 ```
@@ -55,6 +84,8 @@ either.map((v) => v.length); // Right(11)
 Lets see an example of this:
 
 ```ts
+import { Either, Right, Left } from "lich";
+
 const either1 = Right(" Hello World  ").bind(nonEmptyString); // Right("Hello World")
 const either2 = Right("   ").bind(nonEmptyString); // Left("string is empty)
 
@@ -81,6 +112,8 @@ function safeTrim(s: string): Either<string, string> {
 Lets see this in action:
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = Right("Hello ").fold(
   (l) => "ERROR: " + l,
   (v) => v + " World",
@@ -100,6 +133,8 @@ _You cannot chain the `fold` function since it return a pure value and not an `E
 Example:
 
 ```ts
+import { Right } from "lich";
+
 const either = await Right(1).mapAsync(myAsyncFunc); // Right(11)
 
 async function myAsyncFunc(v: number): Promise<number> {
@@ -114,6 +149,8 @@ async function myAsyncFunc(v: number): Promise<number> {
 Lets see:
 
 ```ts
+import { Maybe, Right } from "lich";
+
 const either = await Right("hello world").bindAsync(myAsyncFunc); // Right(12)
 
 async function myAsyncFunc(s: string): Promise<Maybe<number>> {
@@ -128,6 +165,8 @@ async function myAsyncFunc(s: string): Promise<Maybe<number>> {
 In action:
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = await Right("hello world").foldAsync(myAsyncFunc, myAsyncFunc); // 12
 
 const either2 = await Right("hello").foldAsync(myAsyncFunc, (v) => {
@@ -146,6 +185,8 @@ async function myAsyncFunc(s: string): Promise<number> {
 `mapLeft` works the same way as `map` with the difference that it will be called only on the `Left` type of an `Either`.
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = Right("hello world").mapLeft((l) => `ERROR: '${l}'`); // Right("hello world")
 const either2 = Left("some error").mapLeft((l) => `ERROR: '${l}'`); // Left("ERROR: 'some error'")
 ```
@@ -157,6 +198,8 @@ const either2 = Left("some error").mapLeft((l) => `ERROR: '${l}'`); // Left("ERR
 Example here:
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = Right("hello").or("hello world"); // "hello"
 const either2 = Left("error").or("hello world"); // "hello world"
 ```
@@ -168,6 +211,8 @@ const either2 = Left("error").or("hello world"); // "hello world"
 Let's see how to use it:
 
 ```ts
+import { Right } from "lich";
+
 const either = Right("hello")
   .map((v) => v + " world")
   .onJust((v) => console.info(`We have a just with value: ${v}`)); // Right("hello world")
@@ -180,6 +225,8 @@ const either = Right("hello")
 Lets see:
 
 ```ts
+import { Right, Left } from "lich";
+
 const either = Right("hello world")
   .bind((_v) => Left("some error.."))
   .onLeft((l) => console.error("Failed with error: " + l)); // Left("some error..")
@@ -190,6 +237,8 @@ const either = Right("hello world")
 Returns the value of the `Right` side of the `Either`, if called on `Left` it will return the provided default value:
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = Right("hello world").fromRight("hello"); // "hello world"
 const either2 = Left("error").fromRight("hello world"); // "hello world"
 ```
@@ -199,6 +248,8 @@ const either2 = Left("error").fromRight("hello world"); // "hello world"
 `fromLeft` is the opposite of `fromRight`:
 
 ```ts
+import { Right, Left } from "lich";
+
 const either1 = Left("error").fromLeft("hello world"); // "error"
 const either2 = Right("hello world").fromLeft("error"); // "error"
 ```
@@ -210,6 +261,8 @@ const either2 = Right("hello world").fromLeft("error"); // "error"
 Let's see how this goes:
 
 ```ts
+import { Right } from "lich";
+
 const either = Right("this is awesome");
 // either.value <-- if you try to access 'value' here typescript will complain
 
@@ -221,6 +274,8 @@ if (either.isRight()) {
 It works the opposite way as well
 
 ```ts
+import { Left } from "lich";
+
 const either = Left("some error..");
 // either.reason <-- if you try to access 'reason' here typescript will complain
 
@@ -232,6 +287,8 @@ if (!either.isRight()) {
 Or we can do it the other way around
 
 ```ts
+import { Right, Left } from "lich";
+
 function rightOrThrow(either: Either<string, string>): string {
   if (either.isLeft()) {
     throw new Error("Failed with: " + either.reason); // before this line we cannot access `value` field
@@ -246,6 +303,8 @@ function rightOrThrow(either: Either<string, string>): string {
 `isLeft` is just the opposite of `isRight`
 
 ```ts
+import { Left } from "lich";
+
 const either = Left("some error..");
 // either.reason <-- if you try to access 'reason' here typescript will complain
 
@@ -257,6 +316,8 @@ if (either.isLeft()) {
 or
 
 ```ts
+import { Right } from "lich";
+
 const either = Right("this is awesome");
 // either.value <-- if you try to access 'value' here typescript will complain
 
@@ -270,6 +331,7 @@ if (!either.isLeft()) {
 Turn an `Either` into `Maybe`:
 
 ```ts
+import { Right, Left } from "lich";
 const maybe1 = Right("hello world").toMaybe(); // Just("hello world")
 const maybe2 = Left("error").toMaybe(); // Nothing()
 ```

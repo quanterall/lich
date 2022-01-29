@@ -4,6 +4,8 @@
 
 The `Maybe` type export couple of useful function, let's examine what they are and how to use them in practice:
 
+- [Just](#just)
+- [Nothing](#nothing)
 - [map](#map)
 - [mapAsync](#mapasync)
 - [bind](#bind)
@@ -17,11 +19,34 @@ The `Maybe` type export couple of useful function, let's examine what they are a
 - [isNothing](#isnothing)
 - [toEither](#toeither)
 
+### Just
+
+`Just` is a function that returns a `Maybe` with the type `Just`. It will hold the value you pass to it.
+
+```ts
+import { Maybe, Just } from "lich";
+
+const maybeNumber: Maybe<string> = Just("hello world");
+```
+
+### Nothing
+
+`Nothing` is a function that returns a `Maybe` with the type `Nothing`. It doesn't hold any value.
+It indicated that you don't have a value in that variable. It's similar with how some people use `null` or `undefined`.
+
+```ts
+import { Maybe, Nothing } from "lich";
+
+const maybeNumber: Maybe<string> = Nothing();
+```
+
 ### map
 
 `map` is a function that takes another `mapping` function that will be applied to our `Maybe` only if the value inside is a `Just` (this means that we know that we are transforming our value only when there is actually a value inside). If the value inside our `Maybe` is `Nothing`, nothing will change, we'll still have our `Nothing` as the value.
 
 ```ts
+import { Just, Nothing } from "lich";
+
 const maybe = Just("hello world");
 maybe.map((v) => v + "!"); // Just("hello world!")
 
@@ -32,6 +57,8 @@ maybe.map((v) => v + "!"); // Nothing
 And you can call as much of these `map` function as you like:
 
 ```ts
+import { Just } from "lich";
+
 const maybe = Just("hello world");
 maybe
   .map((v) => v + "!") // Just("hello world!")
@@ -41,6 +68,8 @@ maybe
 Another cool thing about map is that you can even change the type of the value inside:
 
 ```ts
+import { Just } from "lich";
+
 const maybe = Just("hello world");
 maybe.map((v) => v.length); // Just(11)
 ```
@@ -52,6 +81,8 @@ maybe.map((v) => v.length); // Just(11)
 Lets see an example of this:
 
 ```ts
+import { Maybe, Just, Nothing } from "lich";
+
 const maybe1 = Just(" Hello World  ").bind(nonEmptyString); // Just("Hello World")
 const maybe2 = Just("   ").bind(nonEmptyString); // Nothing
 
@@ -78,6 +109,8 @@ function nonEmptyString(s: string): Maybe<string> {
 Lets see this in action:
 
 ```ts
+import { Just, Nothing } from "lich";
+
 const maybe1 = Just("Hello ").fold("Hello World", (v) => v + " World"); // "Hello World"
 const maybe2 = Nothing().fold("Hello World", (v) => v + " World"); // "Hello World"
 ```
@@ -91,6 +124,8 @@ _You cannot chain the `fold` function since it return a pure value and not a `Ma
 Example:
 
 ```ts
+import { Just } from "lich";
+
 const maybe = await Just(1).mapAsync(myAsyncFunc); // Just(11)
 
 async function myAsyncFunc(v: number): Promise<number> {
@@ -105,6 +140,8 @@ async function myAsyncFunc(v: number): Promise<number> {
 Lets see:
 
 ```ts
+import { Maybe, Just } from "lich";
+
 const maybe = await Just("hello world").bindAsync(myAsyncFunc); // Just(12)
 
 async function myAsyncFunc(s: string): Promise<Maybe<number>> {
@@ -119,6 +156,8 @@ async function myAsyncFunc(s: string): Promise<Maybe<number>> {
 In action:
 
 ```ts
+import { Just, Nothing } from "lich";
+
 const maybe1 = await Just("hello world").foldAsync(100, myAsyncFunc); // 12
 
 async function myAsyncFunc(s: string): Promise<number> {
@@ -141,6 +180,8 @@ const maybe3 = await Nothing().foldAsync("hello world", (v) => {
 Example here:
 
 ```ts
+import { Just, Nothing } from "lich";
+
 const maybe1 = Just("hello").or("hello world"); // "hello"
 const maybe2 = Nothing().or("hello world"); // "hello world"
 ```
@@ -152,6 +193,8 @@ const maybe2 = Nothing().or("hello world"); // "hello world"
 Let's see how to use it:
 
 ```ts
+import { Just } from "lich";
+
 const maybe = Just("hello")
   .map((v) => v + " world")
   .onJust((v) => console.info(`We have a just with value: ${v}`)); // Just("hello world")
@@ -164,6 +207,8 @@ const maybe = Just("hello")
 Lets see:
 
 ```ts
+import { Just, Nothing } from "lich";
+
 const maybe = Just("hey")
   .bind((_v) => Nothing())
   .onNothing(() => console.error("dang it, it's a Nothing")); // Nothing()
@@ -176,6 +221,8 @@ const maybe = Just("hey")
 Let's see how this goes:
 
 ```ts
+import { Just } from "lich";
+
 const maybe = Just("this is awesome");
 
 // here if we try to access maybe.value, ts will complain to us
@@ -187,8 +234,12 @@ if (maybe.isJust()) {
 Or we can do it the other way around
 
 ```ts
+import { Maybe } from "lich";
+
 function justOrThrow(maybe: Maybe<string>): string {
-  if (!maybe.isJust()) throw new Error("Maybe is not Just"); // before this line we cannot access `value` field
+  if (!maybe.isJust()) {
+    throw new Error("Maybe is not Just"); // before this line we cannot access `value` field
+  }
 
   return maybe.value;
 }
@@ -199,6 +250,8 @@ function justOrThrow(maybe: Maybe<string>): string {
 `isNothing` is just the opposite of `isJust`
 
 ```ts
+import { Just } from "lich";
+
 const maybe = Just("hello world");
 
 // here if we try to access maybe.value, ts will complain to us
@@ -212,6 +265,7 @@ if (!maybe.isNothing()) {
 Turn a `Maybe` into `Either`. If we call it on `Nothing` it takes the default value as a reason for `Left`:
 
 ```ts
+import { Just, Nothing } from "lich";
 const either1 = Just("hello world").toEither(); // Right("hello world")
 const either2 = Nothing().toEither("error"); // Left("error")
 ```

@@ -1,11 +1,21 @@
-## What is lich?
+## Lich - Chaining computations in TypeScript
 
 Lich is a library for chaining computations in TypeScript. It's heavily inspired by the monadic structures in Haskell. In particular `Maybe` and `Either`.
-The goal of lich is to improve flow, quality and reliability of your code.
+The goal of lich is to improve flow, safety and reliability of your code.
 
-## Why lich?
+## Installing
 
-Because it will bring new and refreshing concepts that will add safety and reliability to your code base.
+Via npm:
+
+```
+$ npm install lich
+```
+
+Via yarn:
+
+```
+$ yarn add lich
+```
 
 ## How does it work?
 
@@ -13,6 +23,8 @@ Let's say you want to apply several functions to a string, but you only want to 
 This is how you may go about it, using `lich`:
 
 ```ts
+import { Maybe, Just, Nothing } from "lich";
+
 export function parseString(s: string): Maybe<string> {
   return safeTrim(s)
     .map((j) => j.toUpperCase())
@@ -45,6 +57,8 @@ function clearSpaces(s: string): Maybe<string> {
 If you care about in which step things went wrong you can use `Either` to track your errors:
 
 ```ts
+import { Either, Right, Left } from "lich";
+
 export function parseString(s: string): Either<string, string> {
   return safeTrim(s)
     .map((j) => j.toUpperCase())
