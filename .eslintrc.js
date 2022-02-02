@@ -4,7 +4,7 @@ module.exports = {
     node: true,
   },
   extends: "./rules/common",
-  ignorePatterns: ["tests/*.ts", "**/*.d.ts", "*.js"],
+  ignorePatterns: ["tests/*.ts", "**/*.d.ts", "*.js", "*.config.ts"],
   overrides: [
     {
       files: ["**/*.ts"],
