@@ -1,6 +1,6 @@
 import {
-  fromPromise,
-  fromTry,
+  maybeFromPromise,
+  maybeFromTry,
   Just,
   justs,
   Maybe,
@@ -322,10 +322,10 @@ describe("'nullableToMaybe", () => {
   });
 });
 
-describe("'fromTry'", () => {
+describe("'maybeFromTry'", () => {
   test("should return a 'Just' if no exception is thrown", () => {
     const p = 1;
-    const maybe = fromTry(() => p.toPrecision(3));
+    const maybe = maybeFromTry(() => p.toPrecision(3));
 
     expect(maybe.isJust()).toBe(true);
     expect(maybe.isNothing()).toBe(false);
@@ -334,18 +334,18 @@ describe("'fromTry'", () => {
 
   test("should return a 'Nothing' if an exception is thrown", () => {
     const p = 1;
-    const maybe = fromTry(() => p.toPrecision(300));
+    const maybe = maybeFromTry(() => p.toPrecision(300));
 
     expect(maybe.isJust()).toBe(false);
     expect(maybe.isNothing()).toBe(true);
   });
 });
 
-describe("'fromPromise'", () => {
+describe("'maybeFromPromise'", () => {
   test("should return a 'Just' if Promise resolves", async () => {
     const promise = new Promise<string>((resolve, _reject) => resolve("hello world"));
 
-    const maybe = await fromPromise(promise);
+    const maybe = await maybeFromPromise(promise);
     expect(maybe.isJust()).toBe(true);
     expect(maybe.isNothing()).toBe(false);
     maybe.onJust((j) => expect(j).toBe("hello world"));
@@ -354,7 +354,7 @@ describe("'fromPromise'", () => {
   test("should return a 'Nothing' if Promise rejects", async () => {
     const promise = new Promise<string>((_resolve, reject) => reject("error"));
 
-    const maybe = await fromPromise<string>(promise);
+    const maybe = await maybeFromPromise<string>(promise);
     expect(maybe.isJust()).toBe(false);
     expect(maybe.isNothing()).toBe(true);
   });
