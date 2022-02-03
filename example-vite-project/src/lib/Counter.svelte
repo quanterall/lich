@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Just, Nothing, Left, Right, nullableToEither } from "@quanterall/lich";
+  import { Just, Nothing, nullableToEither } from "@quanterall/lich";
 
   let count: number = 0;
   let initial: number | undefined = undefined;
