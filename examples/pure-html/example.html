@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <script src="https://unpkg.com/@quanterall/lich@1.0.7/dist/index.web.js"></script>
+  </head>
+  <body>
+    <h1>Lich is pretty cool</h1>
+    Learn more about it <a href="https://github.com/quanterall/lich">here</a>.
+    Or just visit the npm page <a href="https://www.npmjs.com/package/@quanterall/lich">here</a>.
+  </body>
+  <script>
+    const just = Lich.Just(10);
+    if (just.isJust()) {
+      console.log(just.value);
+    }
+
+    const nothing = Lich.Nothing();
+    console.info(nothing);
+
+    const right = Lich.Right(10);
+    console.info(right);
+
+    const left = Lich.Left("error");
+    console.info(left);
+  </script>
+</html>
