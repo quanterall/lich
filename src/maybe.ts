@@ -301,7 +301,7 @@ export function nullableToMaybe<J>(j: J): Maybe<J> {
  * @param f `throwable` function
  * @returns Maybe of the result
  */
-export function fromTry<J>(f: () => J): Maybe<J> {
+export function maybeFromTry<J>(f: () => J): Maybe<J> {
   try {
     return Just(f());
   } catch (_e) {
@@ -315,6 +315,6 @@ export function fromTry<J>(f: () => J): Maybe<J> {
  * @param p A `Promise`
  * @returns A `Just` with the result on promise resolve or `Nothing` on promise reject
  */
-export async function fromPromise<R>(p: Promise<R>): Promise<Maybe<R>> {
+export async function maybeFromPromise<R>(p: Promise<R>): Promise<Maybe<R>> {
   return await p.then<Maybe<R>>((j) => Just(j)).catch((_e) => Nothing());
 }
