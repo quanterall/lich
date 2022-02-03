@@ -4,7 +4,7 @@ module.exports = {
     node: true,
   },
   extends: "./rules/common",
-  ignorePatterns: ["tests/*.ts", "**/*.d.ts", "*.js", "*.config.ts", "example-vite-project"],
+  ignorePatterns: ["tests/*.ts", "**/*.d.ts", "*.js", "*.config.ts", "examples/svelte-vite-project"],
   overrides: [
     {
       files: ["**/*.ts"],
