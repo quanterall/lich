@@ -17,6 +17,19 @@ Via yarn:
 $ yarn add @quanterall/lich
 ```
 
+Via html:
+```html
+<script src="https://unpkg.com/@quanterall/lich@1.0.8/dist/index.web.js"></script>
+```
+
+and then use via `Lich` like so:
+```html
+<script>
+  const maybe = Lich.Just(10);
+  const either = Lich.Right("hello world");
+</script>
+```
+
 ## How does it work?
 
 Let's say you want to apply several functions to a string, but you only want to work with it, if it's not empty at the end of each one of them?
