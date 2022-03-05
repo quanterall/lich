@@ -409,7 +409,7 @@ export function lefts<L, R>(es: Either<L, R>[]): L[] {
  * p = 10
  * nullableToEither(p) // Right(10)
  */
-export function nullableToEither<L, R>(r: R, onNullable: L): Either<L, R> {
+export function nullableToEither<L, R>(r: R | null | undefined, onNullable: L): Either<L, R> {
   if (r === null || r === undefined) return Left(onNullable);
 
   return Right(r);

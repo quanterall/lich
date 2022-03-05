@@ -288,7 +288,7 @@ export function sequenceMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
  * p = 10
  * nullableToMaybe(p) // Just(10)
  */
-export function nullableToMaybe<J>(j: J): Maybe<J> {
+export function nullableToMaybe<J>(j: J | null | undefined): Maybe<J> {
   if (j === null || j === undefined) return Nothing();
 
   return Just(j);
