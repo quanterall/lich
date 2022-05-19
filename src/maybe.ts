@@ -275,6 +275,35 @@ export function sequenceMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
 }
 
 /**
+ * Takes a list of `Maybe`s and it returns either
+ * a list with all `Just`s or a `Nothing` if there are no `Just`s in the list.
+ *
+ * @param ms A list of `Maybe`s
+ * @returns `Maybe` with either all `Just`s or a `Nothing`.
+ * @example
+ * const justs = [Just(1), Just(2), Just(3)];
+ * mergeMaybe(justs) // Just([1, 2, 3])
+ *
+ * const maybesWithNothing = [Just(1), Nothing(), Just(3)];
+ * mergeMaybe(maybesWithNothing) // Right([1, 3])
+ *
+ * const maybesWithOnlyLefts = [Nothing(), Nothing(), Nothing()];
+ * mergeMaybe(maybesWithOnlyLefts) // Nothing()
+ */
+export function mergeMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
+  const js: J[] = [];
+  for (const m of ms) {
+    if (m.isJust()) {
+      js.push(m.value);
+    }
+  }
+
+  if (js.length === 0) return Nothing();
+
+  return Just(js);
+}
+
+/**
  * Takes a nullable value, if the value is not equal ot `null` or `undefined`
  * it returns `Just` with the value inside
  * otherwise it returns `Nothing`.
@@ -315,6 +344,35 @@ export function maybeFromTry<J>(f: () => J): Maybe<J> {
  * @param p A `Promise`
  * @returns A `Just` with the result on promise resolve or `Nothing` on promise reject
  */
-export async function maybeFromPromise<R>(p: Promise<R>): Promise<Maybe<R>> {
-  return await p.then<Maybe<R>>((j) => Just(j)).catch((_e) => Nothing());
+export async function maybeFromPromise<J>(p: Promise<J>): Promise<Maybe<J>> {
+  return await p.then<Maybe<J>>((j) => Just(j)).catch((_e) => Nothing());
+}
+
+/**
+ * Finds the first `Just` in a list of `Maybe`s
+ *
+ * @param ms List of `Maybe`s
+ * @returns `Maybe` with the first `Just` or `Nothing`
+ */
+export function firstJust<J>(ms: Maybe<J>[]): Maybe<J> {
+  for (const m of ms) {
+    if (m.isJust()) return m;
+  }
+
+  return Nothing();
+}
+
+/**
+ * Filter a list of elements where the predicate returns `Just`.
+ *
+ * @param ms List of `Maybe`s
+ * @param predicate Function that takes an element of type `T` and returns a `Maybe` of type `U`
+ * @returns List of all filtered elements
+ */
+export function filterMaybes<J, U>(ms: J[], predicate: (v: J) => Maybe<U>): J[] {
+  return ms.reduce((acc, m) => {
+    const value = predicate(m);
+
+    return value.isJust() ? [...acc, m] : acc;
+  }, [] as J[]);
 }

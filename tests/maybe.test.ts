@@ -7,6 +7,8 @@ import {
   Nothing,
   nullableToMaybe,
   sequenceMaybe,
+  mergeMaybe,
+  firstJust,
 } from "../src/maybe";
 
 describe("'isJust'", () => {
@@ -278,8 +280,8 @@ describe("'justs'", () => {
 
 describe("sequenceMaybe", () => {
   test("should return an 'Just' with a list of 'Just's if all values are 'Just'", () => {
-    const es = [Just(1), Just(2), Just(3)];
-    const maybe = sequenceMaybe(es);
+    const list = [Just(1), Just(2), Just(3)];
+    const maybe = sequenceMaybe(list);
 
     expect(maybe.isJust()).toBe(true);
     expect(maybe.isNothing()).toBe(false);
@@ -287,8 +289,16 @@ describe("sequenceMaybe", () => {
   });
 
   test("should return on the first 'Nothing' it encounters if there is a 'Nothing'", () => {
-    const es = [Just(1), Nothing(), Just(3), Nothing()];
-    const maybe = sequenceMaybe(es);
+    const list = [Just(1), Nothing(), Just(3), Nothing()];
+    const maybe = sequenceMaybe(list);
+
+    expect(maybe.isJust()).toBe(false);
+    expect(maybe.isNothing()).toBe(true);
+  });
+
+  test("should return on the first 'Nothing' it encounters if there are only 'Nothing'", () => {
+    const list = [Nothing(), Nothing(), Nothing(), Nothing()];
+    const maybe = sequenceMaybe(list);
 
     expect(maybe.isJust()).toBe(false);
     expect(maybe.isNothing()).toBe(true);
@@ -341,8 +351,8 @@ describe("'maybeFromTry'", () => {
   });
 });
 
-describe("'maybeFromPromise'", () => {
-  test("should return a 'Just' if Promise resolves", async () => {
+describe("'maybeFromPromise' should return ", () => {
+  test("'Just' if Promise resolves", async () => {
     const promise = new Promise<string>((resolve, _reject) => resolve("hello world"));
 
     const maybe = await maybeFromPromise(promise);
@@ -351,11 +361,83 @@ describe("'maybeFromPromise'", () => {
     maybe.onJust((j) => expect(j).toBe("hello world"));
   });
 
-  test("should return a 'Nothing' if Promise rejects", async () => {
+  test("'Nothing' if Promise rejects", async () => {
     const promise = new Promise<string>((_resolve, reject) => reject("error"));
 
     const maybe = await maybeFromPromise<string>(promise);
     expect(maybe.isJust()).toBe(false);
     expect(maybe.isNothing()).toBe(true);
+  });
+});
+
+describe("'mergeMaybe' should return", () => {
+  test("'Just' if all elements are 'Just'", async () => {
+    const justs = [Just(1), Just(2), Just(3)];
+    const result = mergeMaybe(justs);
+
+    expect(result.isJust()).toBe(true);
+    expect(result.isNothing()).toBe(false);
+    result.onJust((j) => expect(j).toEqual([1, 2, 3]));
+  });
+
+  test("'Just' if one element is 'Nothing', but the rest are 'Just'", async () => {
+    const justs = [Just(1), Nothing(), Just(3)];
+    const result = mergeMaybe(justs);
+
+    expect(result.isJust()).toBe(true);
+    expect(result.isNothing()).toBe(false);
+
+    result.onJust((j) => expect(j).toEqual([1, 3]));
+  });
+
+  test("'Just' if one element is 'Just' and the rest are 'Nothing'", async () => {
+    const justs = [Nothing(), Nothing(), Just(3)];
+    const result = mergeMaybe(justs);
+
+    expect(result.isJust()).toBe(true);
+    expect(result.isNothing()).toBe(false);
+
+    result.onJust((j) => expect(j).toEqual([3]));
+  });
+
+  test("'Nothing' if all element are 'Nothing'", async () => {
+    const justs = [Nothing(), Nothing(), Nothing()];
+    const result = mergeMaybe(justs);
+
+    expect(result.isJust()).toBe(false);
+    expect(result.isNothing()).toBe(true);
+  });
+});
+
+describe("'firstJust' should return", () => {
+  test("the first 'Just' there is a 'Just' element", async () => {
+    const justs = [Just(1), Just(2), Just(3)];
+    const result = firstJust(justs);
+
+    expect(result.isJust()).toBe(true);
+    expect(result.isNothing()).toBe(false);
+    result.onJust((j) => expect(j).toBe(1));
+
+    const justs2 = [Nothing(), Just(2), Nothing()];
+    const result2 = firstJust(justs2);
+
+    expect(result2.isJust()).toBe(true);
+    expect(result2.isNothing()).toBe(false);
+    result2.onJust((j) => expect(j).toBe(2));
+
+    const justs3 = [Nothing(), Nothing(), Just(3)];
+    const result3 = firstJust(justs3);
+
+    expect(result3.isJust()).toBe(true);
+    expect(result3.isNothing()).toBe(false);
+    result3.onJust((j) => expect(j).toBe(3));
+  });
+
+  test("'Nothing' if all elements are 'Nothing'", async () => {
+    const justs = [Nothing(), Nothing(), Nothing()];
+    const result = firstJust(justs);
+
+    expect(result.isJust()).toBe(false);
+    expect(result.isNothing()).toBe(true);
   });
 });

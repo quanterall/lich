@@ -10,6 +10,7 @@ import {
   rightsOr,
   eitherFromTry,
   eitherFromPromise,
+  mergeEither,
 } from "../src/either";
 
 describe("'isRight", () => {
@@ -367,8 +368,8 @@ describe("'rightsOr'", () => {
   });
 
   test("should return a 'Left' with the provided default reason if all values are 'Left's", () => {
-    const es = [Left("NaN"), Left("NaN"), Left("NaN")];
-    const either = rightsOr(es, "default error");
+    const list = [Left("NaN"), Left("NaN"), Left("NaN")];
+    const either = rightsOr(list, "default error");
 
     expect(either.isRight()).toBe(false);
     expect(either.isLeft()).toBe(true);
@@ -378,8 +379,8 @@ describe("'rightsOr'", () => {
 
 describe("sequenceEither", () => {
   test("should return an 'Right' with a list of 'Right' if all values are 'Right's", () => {
-    const es = [Right(1), Right(2), Right(3)];
-    const either = sequenceEither(es);
+    const list = [Right(1), Right(2), Right(3)];
+    const either = sequenceEither(list);
 
     expect(either.isRight()).toBe(true);
     expect(either.isLeft()).toBe(false);
@@ -393,6 +394,15 @@ describe("sequenceEither", () => {
     expect(either.isRight()).toBe(false);
     expect(either.isLeft()).toBe(true);
     either.onLeft((l) => expect(l).toBe("NaN1"));
+  });
+
+  test("should return the first 'Left' it there are only 'Left's", () => {
+    const list = [Left("NaN0"), Left("NaN1"), Left("NaN2"), Left("NaN3")];
+    const either = sequenceEither(list);
+
+    expect(either.isRight()).toBe(false);
+    expect(either.isLeft()).toBe(true);
+    either.onLeft((l) => expect(l).toBe("NaN0"));
   });
 });
 
@@ -504,5 +514,43 @@ describe("'eitherFromPromise'", () => {
     expect(either.isRight()).toBe(false);
     expect(either.isLeft()).toBe(true);
     either.onLeft((l) => expect(l).toBe("error"));
+  });
+});
+
+describe("'mergeEither' should return", () => {
+  test("'Right' if all elements are 'Right'", async () => {
+    const rights = [Right(1), Right(2), Right(3)];
+    const result = mergeEither(rights, "No valid numbers");
+
+    expect(result.isRight()).toBe(true);
+    expect(result.isLeft()).toBe(false);
+    result.onRight((r) => expect(r).toEqual([1, 2, 3]));
+  });
+
+  test("'Right' if one element is 'Left', but the rest are 'Right'", async () => {
+    const eithersWithLeft = [Right(1), Left("NaN"), Right(3)];
+    const result = mergeEither(eithersWithLeft, "No valid numbers");
+
+    expect(result.isRight()).toBe(true);
+    expect(result.isLeft()).toBe(false);
+    result.onRight((r) => expect(r).toEqual([1, 3]));
+  });
+
+  test("'Right' if one element is 'Right' and the rest are 'Left'", async () => {
+    const eithersWithLeft = [Left("NaN"), Left("NaN"), Right(3)];
+    const result = mergeEither(eithersWithLeft, "No valid numbers");
+
+    expect(result.isRight()).toBe(true);
+    expect(result.isLeft()).toBe(false);
+    result.onRight((r) => expect(r).toEqual([3]));
+  });
+
+  test("'Left' if all element are 'Left'", async () => {
+    const eithersWithOnlyLefts = [Left("NaN"), Left("NaN"), Left("NaN")];
+    const result = mergeEither(eithersWithOnlyLefts, "No valid numbers");
+
+    expect(result.isRight()).toBe(false);
+    expect(result.isLeft()).toBe(true);
+    result.onLeft((l) => expect(l).toEqual("No valid numbers"));
   });
 });

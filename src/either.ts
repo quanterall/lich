@@ -352,6 +352,36 @@ export function sequenceEither<L, R>(es: Either<L, R>[]): Either<L, R[]> {
 }
 
 /**
+ * Takes a list of `Either`s and it returns either
+ * a list with all `Right`s or a `Left` with the provided error
+ * if there are no `Right`s in the list.
+ *
+ * @param es A list of `Either`s
+ * @returns `Either` with either all `Right`s or a `Left` with the provided error
+ * @example
+ * const rights = [Right(1), Right(2), Right(3)];
+ * mergeEither(rights, "No valid numbers") // Right([1, 2, 3])
+ *
+ * const eithersWithLeft = [Right(1), Left("NaN"), Right(3)];
+ * mergeEither(eithersWithLeft, "No valid numbers") // Right([1, 3])
+ *
+ * const eithersWithOnlyLefts = [Left("NaN"), Left("NaN"), Left("NaN")];
+ * mergeEither(eithersWithOnlyLefts, "No valid numbers") // Left("No numbers")
+ */
+export function mergeEither<L, R>(es: Either<L, R>[], errorOnAllFailure: L): Either<L, R[]> {
+  const rs: R[] = [];
+  for (const e of es) {
+    if (e.isRight()) {
+      rs.push(e.value);
+    }
+  }
+
+  if (rs.length === 0) return Left(errorOnAllFailure);
+
+  return Right(rs);
+}
+
+/**
  * Takes a list of `Either`s and a default error value and returns
  * either the first `Right` that it finds
  * or a `Left` with the default error value if all are `Left`s.
