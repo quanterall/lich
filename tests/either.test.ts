@@ -10,7 +10,7 @@ import {
   rightsOr,
   eitherFromTry,
   eitherFromPromise,
-  mergeEither,
+  mergeRights,
 } from "../src/either";
 
 describe("'isRight", () => {
@@ -517,10 +517,10 @@ describe("'eitherFromPromise'", () => {
   });
 });
 
-describe("'mergeEither' should return", () => {
+describe("'mergeRights' should return", () => {
   test("'Right' if all elements are 'Right'", async () => {
     const rights = [Right(1), Right(2), Right(3)];
-    const result = mergeEither(rights, "No valid numbers");
+    const result = mergeRights(rights, "No valid numbers");
 
     expect(result.isRight()).toBe(true);
     expect(result.isLeft()).toBe(false);
@@ -529,7 +529,7 @@ describe("'mergeEither' should return", () => {
 
   test("'Right' if one element is 'Left', but the rest are 'Right'", async () => {
     const eithersWithLeft = [Right(1), Left("NaN"), Right(3)];
-    const result = mergeEither(eithersWithLeft, "No valid numbers");
+    const result = mergeRights(eithersWithLeft, "No valid numbers");
 
     expect(result.isRight()).toBe(true);
     expect(result.isLeft()).toBe(false);
@@ -538,7 +538,7 @@ describe("'mergeEither' should return", () => {
 
   test("'Right' if one element is 'Right' and the rest are 'Left'", async () => {
     const eithersWithLeft = [Left("NaN"), Left("NaN"), Right(3)];
-    const result = mergeEither(eithersWithLeft, "No valid numbers");
+    const result = mergeRights(eithersWithLeft, "No valid numbers");
 
     expect(result.isRight()).toBe(true);
     expect(result.isLeft()).toBe(false);
@@ -547,7 +547,7 @@ describe("'mergeEither' should return", () => {
 
   test("'Left' if all element are 'Left'", async () => {
     const eithersWithOnlyLefts = [Left("NaN"), Left("NaN"), Left("NaN")];
-    const result = mergeEither(eithersWithOnlyLefts, "No valid numbers");
+    const result = mergeRights(eithersWithOnlyLefts, "No valid numbers");
 
     expect(result.isRight()).toBe(false);
     expect(result.isLeft()).toBe(true);

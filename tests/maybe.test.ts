@@ -7,7 +7,7 @@ import {
   Nothing,
   nullableToMaybe,
   sequenceMaybe,
-  mergeMaybe,
+  mergeJusts,
   firstJust,
 } from "../src/maybe";
 
@@ -370,10 +370,10 @@ describe("'maybeFromPromise' should return ", () => {
   });
 });
 
-describe("'mergeMaybe' should return", () => {
+describe("'mergeJusts' should return", () => {
   test("'Just' if all elements are 'Just'", async () => {
     const justs = [Just(1), Just(2), Just(3)];
-    const result = mergeMaybe(justs);
+    const result = mergeJusts(justs);
 
     expect(result.isJust()).toBe(true);
     expect(result.isNothing()).toBe(false);
@@ -382,7 +382,7 @@ describe("'mergeMaybe' should return", () => {
 
   test("'Just' if one element is 'Nothing', but the rest are 'Just'", async () => {
     const justs = [Just(1), Nothing(), Just(3)];
-    const result = mergeMaybe(justs);
+    const result = mergeJusts(justs);
 
     expect(result.isJust()).toBe(true);
     expect(result.isNothing()).toBe(false);
@@ -392,7 +392,7 @@ describe("'mergeMaybe' should return", () => {
 
   test("'Just' if one element is 'Just' and the rest are 'Nothing'", async () => {
     const justs = [Nothing(), Nothing(), Just(3)];
-    const result = mergeMaybe(justs);
+    const result = mergeJusts(justs);
 
     expect(result.isJust()).toBe(true);
     expect(result.isNothing()).toBe(false);
@@ -402,7 +402,7 @@ describe("'mergeMaybe' should return", () => {
 
   test("'Nothing' if all element are 'Nothing'", async () => {
     const justs = [Nothing(), Nothing(), Nothing()];
-    const result = mergeMaybe(justs);
+    const result = mergeJusts(justs);
 
     expect(result.isJust()).toBe(false);
     expect(result.isNothing()).toBe(true);

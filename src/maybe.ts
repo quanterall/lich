@@ -282,15 +282,15 @@ export function sequenceMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
  * @returns `Maybe` with either all `Just`s or a `Nothing`.
  * @example
  * const justs = [Just(1), Just(2), Just(3)];
- * mergeMaybe(justs) // Just([1, 2, 3])
+ * mergeJusts(justs) // Just([1, 2, 3])
  *
  * const maybesWithNothing = [Just(1), Nothing(), Just(3)];
- * mergeMaybe(maybesWithNothing) // Right([1, 3])
+ * mergeJusts(maybesWithNothing) // Right([1, 3])
  *
  * const maybesWithOnlyLefts = [Nothing(), Nothing(), Nothing()];
- * mergeMaybe(maybesWithOnlyLefts) // Nothing()
+ * mergeJusts(maybesWithOnlyLefts) // Nothing()
  */
-export function mergeMaybe<J>(ms: Maybe<J>[]): Maybe<J[]> {
+export function mergeJusts<J>(ms: Maybe<J>[]): Maybe<J[]> {
   const js: J[] = [];
   for (const m of ms) {
     if (m.isJust()) {
