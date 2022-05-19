@@ -4,20 +4,21 @@
 
 The `Maybe` type export couple of useful function, let's examine what they are and how to use them in practice:
 
-- [Just](#just)
-- [Nothing](#nothing)
-- [map](#map)
-- [mapAsync](#mapasync)
-- [bind](#bind)
-- [bindAsync](#bindasync)
-- [fold](#fold)
-- [foldAsync](#foldasync)
-- [otherwise](#otherwise)
-- [onJust](#onjust)
-- [onNothing](#onnothing)
-- [isJust](#isjust)
-- [isNothing](#isnothing)
-- [toEither](#toeither)
+- [Maybe](#maybe)
+  - [Just](#just)
+  - [Nothing](#nothing)
+  - [map](#map)
+  - [bind](#bind)
+  - [fold](#fold)
+  - [mapAsync](#mapasync)
+  - [bindAsync](#bindasync)
+  - [foldAsync](#foldasync)
+  - [otherwise](#otherwise)
+  - [onJust](#onjust)
+  - [onNothing](#onnothing)
+  - [isJust](#isjust)
+  - [isNothing](#isnothing)
+  - [toEither](#toeither)
 
 ### Just
 
