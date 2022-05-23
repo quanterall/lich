@@ -15,9 +15,8 @@
     "prepublish": "yarn build && yarn test",
     "clean": "yarn rimraf dist",
     "prebuild": "yarn clean && yarn format && yarn lint",
-    "build:main": "yarn tsc",
     "build:es-web": "esbuild --target=es6 --bundle index.ts --outfile=dist/index.web.js --sourcemap --format=iife --global-name=Lich --minify",
-    "build": "yarn build:main && yarn build:es-web",
+    "build": "yarn tsc && yarn build:es-web",
     "lint": "eslint -c .eslintrc.js .",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest"
