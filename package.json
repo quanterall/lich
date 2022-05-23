@@ -2,11 +2,11 @@
   "name": "@quanterall/lich",
   "description": "Lich is a library for chaining computations in TypeScript. It's heavily inspired by the monadic structures in Haskell. In particular Maybe and Either.",
   "author": "Georgi Spasov",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "license": "BSD-2-Clause",
   "browser": "dist/index.js",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "main": "dist/index.main.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -15,10 +15,11 @@
     "prepublish": "yarn build && yarn test",
     "clean": "yarn rimraf dist",
     "prebuild": "yarn clean && yarn format && yarn lint",
+    "build:main": "esbuild --target=es6 --bundle index.ts --outdir=dist --sourcemap --format=cjs --minify",
     "build:es-web": "esbuild --target=es6 --bundle index.ts --outfile=dist/index.web.js --sourcemap --format=iife --global-name=Lich --minify",
-    "build:es": "esbuild --target=es6 --bundle index.ts --outdir=dist --sourcemap --format=esm --splitting --minify",
+    "build:es": "esbuild --target=es6 --bundle index.ts --outfile=dist/index.mjs --sourcemap --format=esm",
     "build:types": "tsc -p tsconfig.build.json",
-    "build": "yarn build:types && yarn build:es && yarn build:es-web",
+    "build": "yarn build:types && yarn build:es && yarn build:es-web && yarn build:main",
     "lint": "eslint -c .eslintrc.js .",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest"
